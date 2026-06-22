@@ -1,7 +1,7 @@
 import type { AuthUser, Env } from './types';
 
 export const sessionCookieName = 'cms_session';
-const defaultIterations = 120_000;
+const defaultIterations = 100_000;
 const sessionDays = 7;
 
 export interface LoginResult {
