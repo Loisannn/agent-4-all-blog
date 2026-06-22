@@ -20,6 +20,13 @@ describe('auth helpers', () => {
     await expect(verifyPassword('wrong password', hash)).resolves.toBe(false);
   });
 
+  it('uses a Cloudflare-supported default PBKDF2 iteration count', async () => {
+    const hash = await hashPassword('correct horse battery staple', 'fixed-salt');
+    const [, iterations] = hash.split('$');
+
+    expect(Number(iterations)).toBeLessThanOrEqual(100_000);
+  });
+
   it('parses cookie headers', () => {
     expect(parseCookie('cms_session=abc123; theme=dark', 'cms_session')).toBe('abc123');
     expect(parseCookie('', 'cms_session')).toBeNull();
