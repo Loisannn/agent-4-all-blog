@@ -1,0 +1,710 @@
+---
+
+---
+
+<html lang="zh-CN">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" href="/favicon.ico" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>CMS | Agent 4 All</title>
+	</head>
+	<body>
+		<main class="app">
+			<header class="topbar">
+				<a class="brand" href="/">Agent 4 All CMS</a>
+				<div class="top-actions">
+					<span id="userEmail">Checking session</span>
+					<button id="logoutButton" type="button" hidden>退出</button>
+					<a href="/blog">Blog</a>
+				</div>
+			</header>
+
+			<section id="authPanel" class="auth-panel">
+				<form id="authForm" class="auth-form">
+					<div>
+						<p id="authMode">Login</p>
+						<h1 id="authTitle">登录 CMS</h1>
+						<p id="authHint">使用管理员邮箱和密码登录后台。</p>
+					</div>
+					<label id="nameField" hidden>
+						名称
+						<input id="authName" autocomplete="name" />
+					</label>
+					<label>
+						邮箱
+						<input id="authEmail" type="email" autocomplete="email" required />
+					</label>
+					<label>
+						密码
+						<input id="authPassword" type="password" autocomplete="current-password" minlength="8" required />
+					</label>
+					<label id="setupTokenField" hidden>
+						初始化 token
+						<input id="authSetupToken" autocomplete="off" />
+					</label>
+					<button id="authSubmit" class="primary" type="submit">登录</button>
+					<div id="authMessage" class="message" role="status"></div>
+				</form>
+			</section>
+
+			<section id="workspace" class="workspace" hidden>
+				<aside class="sidebar" aria-label="Posts">
+					<div class="sidebar-tools">
+						<input id="searchInput" type="search" placeholder="搜索文章" />
+						<select id="statusFilter" aria-label="状态">
+							<option value="">全部</option>
+							<option value="draft">草稿</option>
+							<option value="published">已发布</option>
+						</select>
+						<button id="newPostButton" type="button">新建</button>
+					</div>
+					<div id="postList" class="post-list"></div>
+				</aside>
+
+				<form id="editor" class="editor">
+					<div class="editor-head">
+						<div>
+							<p id="editorState">Draft</p>
+							<h1 id="editorTitle">新文章</h1>
+						</div>
+						<div class="editor-actions">
+							<button id="deleteButton" class="danger" type="button">删除</button>
+							<button id="saveDraftButton" type="button">存草稿</button>
+							<button id="publishButton" class="primary" type="button">发布</button>
+						</div>
+					</div>
+
+					<div class="field-grid">
+						<label>
+							标题
+							<input id="titleInput" name="title" required />
+						</label>
+						<label>
+							Slug
+							<input id="slugInput" name="slug" />
+						</label>
+					</div>
+
+					<label>
+						摘要
+						<textarea id="excerptInput" name="excerpt" rows="3"></textarea>
+					</label>
+
+					<div class="media-row">
+						<label>
+							封面 key
+							<input id="coverInput" name="cover_image_key" />
+						</label>
+						<label class="file-field">
+							图片
+							<input id="mediaInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
+						</label>
+						<button id="uploadCoverButton" type="button">设为封面</button>
+						<button id="insertImageButton" type="button">插入正文</button>
+					</div>
+
+					<label class="content-field">
+						正文 Markdown
+						<textarea id="contentInput" name="content_markdown" rows="20" required></textarea>
+					</label>
+
+					<div id="message" class="message" role="status"></div>
+				</form>
+			</section>
+		</main>
+
+		<script>
+			const state = {
+				posts: [],
+				current: null,
+				setupRequired: false,
+				status: 'draft',
+			};
+
+			const els = {
+				authEmail: document.querySelector('#authEmail'),
+				authForm: document.querySelector('#authForm'),
+				authHint: document.querySelector('#authHint'),
+				authMessage: document.querySelector('#authMessage'),
+				authMode: document.querySelector('#authMode'),
+				authName: document.querySelector('#authName'),
+				authPanel: document.querySelector('#authPanel'),
+				authPassword: document.querySelector('#authPassword'),
+				authSetupToken: document.querySelector('#authSetupToken'),
+				authSubmit: document.querySelector('#authSubmit'),
+				authTitle: document.querySelector('#authTitle'),
+				content: document.querySelector('#contentInput'),
+				cover: document.querySelector('#coverInput'),
+				delete: document.querySelector('#deleteButton'),
+				editorState: document.querySelector('#editorState'),
+				editorTitle: document.querySelector('#editorTitle'),
+				excerpt: document.querySelector('#excerptInput'),
+				insertImage: document.querySelector('#insertImageButton'),
+				logout: document.querySelector('#logoutButton'),
+				media: document.querySelector('#mediaInput'),
+				message: document.querySelector('#message'),
+				newPost: document.querySelector('#newPostButton'),
+				nameField: document.querySelector('#nameField'),
+				postList: document.querySelector('#postList'),
+				publish: document.querySelector('#publishButton'),
+				saveDraft: document.querySelector('#saveDraftButton'),
+				search: document.querySelector('#searchInput'),
+				setupTokenField: document.querySelector('#setupTokenField'),
+				slug: document.querySelector('#slugInput'),
+				statusFilter: document.querySelector('#statusFilter'),
+				title: document.querySelector('#titleInput'),
+				uploadCover: document.querySelector('#uploadCoverButton'),
+				userEmail: document.querySelector('#userEmail'),
+				workspace: document.querySelector('#workspace'),
+			};
+
+			init();
+
+			function init() {
+				bindEvents();
+				resetEditor();
+				checkAuth();
+			}
+
+			function bindEvents() {
+				els.authForm.addEventListener('submit', submitAuth);
+				els.logout.addEventListener('click', logout);
+				els.newPost.addEventListener('click', resetEditor);
+				els.saveDraft.addEventListener('click', () => savePost('draft'));
+				els.publish.addEventListener('click', () => savePost('published'));
+				els.delete.addEventListener('click', deleteCurrentPost);
+				els.uploadCover.addEventListener('click', () => uploadImage('cover'));
+				els.insertImage.addEventListener('click', () => uploadImage('insert'));
+				els.search.addEventListener('input', debounce(loadPosts, 250));
+				els.statusFilter.addEventListener('change', loadPosts);
+				els.title.addEventListener('input', () => {
+					els.editorTitle.textContent = els.title.value || '新文章';
+				});
+			}
+
+			async function checkAuth() {
+				try {
+					const status = await api('/api/auth/status');
+					state.setupRequired = status.setupRequired;
+					if (status.authenticated) {
+						enterApp(status.user);
+					} else {
+						showAuth(status.setupRequired);
+					}
+				} catch (error) {
+					showAuth(false);
+					showAuthMessage(error.message, true);
+				}
+			}
+
+			function showAuth(setupRequired) {
+				state.setupRequired = setupRequired;
+				els.workspace.hidden = true;
+				els.authPanel.hidden = false;
+				els.logout.hidden = true;
+				els.userEmail.textContent = setupRequired ? 'Setup required' : 'Not logged in';
+				els.nameField.hidden = !setupRequired;
+				els.setupTokenField.hidden = !setupRequired;
+				els.authMode.textContent = setupRequired ? 'Setup' : 'Login';
+				els.authTitle.textContent = setupRequired ? '创建第一个管理员' : '登录 CMS';
+				els.authHint.textContent = setupRequired
+					? '当前还没有管理员。创建第一个账号后，初始化入口会自动关闭。'
+					: '使用管理员邮箱和密码登录后台。';
+				els.authSubmit.textContent = setupRequired ? '创建管理员' : '登录';
+				els.authPassword.autocomplete = setupRequired ? 'new-password' : 'current-password';
+				els.authEmail.focus();
+			}
+
+			function enterApp(user) {
+				els.authPanel.hidden = true;
+				els.workspace.hidden = false;
+				els.logout.hidden = false;
+				els.userEmail.textContent = user?.email || 'Logged in';
+				showAuthMessage('');
+				loadPosts();
+			}
+
+			async function submitAuth(event) {
+				event.preventDefault();
+				const body = {
+					email: els.authEmail.value,
+					password: els.authPassword.value,
+					name: els.authName.value,
+					setupToken: els.authSetupToken.value,
+				};
+				const path = state.setupRequired ? '/api/auth/setup' : '/api/auth/login';
+
+				try {
+					const { user } = await api(path, {
+						method: 'POST',
+						headers: { 'content-type': 'application/json' },
+						body: JSON.stringify(body),
+					});
+					els.authPassword.value = '';
+					enterApp(user);
+				} catch (error) {
+					showAuthMessage(error.message, true);
+				}
+			}
+
+			async function logout() {
+				try {
+					await api('/api/auth/logout', { method: 'POST' });
+				} finally {
+					state.posts = [];
+					resetEditor();
+					showAuth(false);
+				}
+			}
+
+			async function loadPosts() {
+				const params = new URLSearchParams();
+				if (els.statusFilter.value) params.set('status', els.statusFilter.value);
+				if (els.search.value.trim()) params.set('q', els.search.value.trim());
+
+				try {
+					const { posts } = await api(`/api/admin/posts?${params}`);
+					state.posts = posts;
+					renderPostList();
+				} catch (error) {
+					showMessage(error.message, true);
+				}
+			}
+
+			function renderPostList() {
+				els.postList.innerHTML = '';
+				if (!state.posts.length) {
+					els.postList.innerHTML = '<p class="empty">暂无文章</p>';
+					return;
+				}
+
+				for (const post of state.posts) {
+					const button = document.createElement('button');
+					button.type = 'button';
+					button.className = `post-row ${state.current?.id === post.id ? 'active' : ''}`;
+					button.innerHTML = `
+						<span>${escapeHtml(post.title)}</span>
+						<small>${post.status === 'published' ? '已发布' : '草稿'} · ${new Date(post.updated_at).toLocaleDateString()}</small>
+					`;
+					button.addEventListener('click', () => loadPost(post.id));
+					els.postList.append(button);
+				}
+			}
+
+			async function loadPost(id) {
+				try {
+					const { post } = await api(`/api/admin/posts/${id}`);
+					state.current = post;
+					fillEditor(post);
+					renderPostList();
+				} catch (error) {
+					showMessage(error.message, true);
+				}
+			}
+
+			function fillEditor(post) {
+				state.status = post.status;
+				els.title.value = post.title;
+				els.slug.value = post.slug;
+				els.excerpt.value = post.excerpt || '';
+				els.cover.value = post.cover_image_key || '';
+				els.content.value = post.content_markdown;
+				els.editorTitle.textContent = post.title;
+				els.editorState.textContent = post.status === 'published' ? 'Published' : 'Draft';
+				els.publish.textContent = post.status === 'published' ? '取消发布' : '发布';
+				els.delete.disabled = false;
+			}
+
+			function resetEditor() {
+				state.current = null;
+				state.status = 'draft';
+				els.title.value = '';
+				els.slug.value = '';
+				els.excerpt.value = '';
+				els.cover.value = '';
+				els.content.value = '';
+				els.editorTitle.textContent = '新文章';
+				els.editorState.textContent = 'Draft';
+				els.publish.textContent = '发布';
+				els.delete.disabled = true;
+				renderPostList();
+			}
+
+			async function savePost(nextStatus) {
+				const status = state.current?.status === 'published' && nextStatus === 'published' ? 'draft' : nextStatus;
+				const body = {
+					title: els.title.value,
+					slug: els.slug.value,
+					excerpt: els.excerpt.value,
+					cover_image_key: els.cover.value,
+					content_markdown: els.content.value,
+					status,
+				};
+				const path = state.current ? `/api/admin/posts/${state.current.id}` : '/api/admin/posts';
+				const method = state.current ? 'PATCH' : 'POST';
+
+				try {
+					const { post } = await api(path, {
+						method,
+						headers: { 'content-type': 'application/json' },
+						body: JSON.stringify(body),
+					});
+					state.current = post;
+					fillEditor(post);
+					await loadPosts();
+					showMessage('已保存');
+				} catch (error) {
+					showMessage(error.message, true);
+				}
+			}
+
+			async function deleteCurrentPost() {
+				if (!state.current) return;
+				try {
+					await api(`/api/admin/posts/${state.current.id}`, { method: 'DELETE' });
+					resetEditor();
+					await loadPosts();
+					showMessage('已删除');
+				} catch (error) {
+					showMessage(error.message, true);
+				}
+			}
+
+			async function uploadImage(mode) {
+				const file = els.media.files?.[0];
+				if (!file) {
+					showMessage('请选择图片', true);
+					return;
+				}
+
+				const form = new FormData();
+				form.append('file', file);
+				try {
+					const { asset, url } = await api('/api/admin/media', {
+						method: 'POST',
+						body: form,
+					});
+					if (mode === 'cover') {
+						els.cover.value = asset.key;
+					} else {
+						const markdown = `![${file.name}](${url})`;
+						insertAtCursor(els.content, markdown);
+					}
+					showMessage('图片已上传');
+				} catch (error) {
+					showMessage(error.message, true);
+				}
+			}
+
+			async function api(path, options = {}) {
+				const response = await fetch(path, options);
+				const payload = await response.json().catch(() => null);
+				if (!response.ok || !payload?.ok) {
+					throw new Error(payload?.error?.message || `Request failed (${response.status})`);
+				}
+				return payload.data;
+			}
+
+			function insertAtCursor(textarea, value) {
+				const start = textarea.selectionStart || 0;
+				const end = textarea.selectionEnd || 0;
+				textarea.value = `${textarea.value.slice(0, start)}${value}${textarea.value.slice(end)}`;
+				textarea.focus();
+				textarea.selectionStart = textarea.selectionEnd = start + value.length;
+			}
+
+			function showMessage(message, isError = false) {
+				els.message.textContent = message;
+				els.message.classList.toggle('error', isError);
+			}
+
+			function showAuthMessage(message, isError = false) {
+				els.authMessage.textContent = message;
+				els.authMessage.classList.toggle('error', isError);
+			}
+
+			function debounce(fn, wait) {
+				let timer;
+				return () => {
+					clearTimeout(timer);
+					timer = setTimeout(fn, wait);
+				};
+			}
+
+			function escapeHtml(value) {
+				return String(value).replace(/[&<>"']/g, (char) => ({
+					'&': '&amp;',
+					'<': '&lt;',
+					'>': '&gt;',
+					'"': '&quot;',
+					"'": '&#39;',
+				})[char]);
+			}
+		</script>
+	</body>
+</html>
+
+<style>
+	:root {
+		color-scheme: light;
+		font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+		color: #18202f;
+		background: #f6f7fb;
+	}
+
+	body {
+		margin: 0;
+	}
+
+	button,
+	input,
+	select,
+	textarea {
+		font: inherit;
+	}
+
+	button,
+	a {
+		color: inherit;
+	}
+
+	button {
+		border: 1px solid #ccd4e2;
+		border-radius: 6px;
+		background: #fff;
+		padding: 9px 12px;
+		cursor: pointer;
+	}
+
+	button:disabled {
+		cursor: not-allowed;
+		opacity: 0.45;
+	}
+
+	[hidden] {
+		display: none !important;
+	}
+
+	.app {
+		min-height: 100vh;
+		display: grid;
+		grid-template-rows: auto 1fr;
+	}
+
+	.topbar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		padding: 14px 18px;
+		border-bottom: 1px solid #dbe1ec;
+		background: #fff;
+	}
+
+	.brand,
+	.top-actions a {
+		font-weight: 800;
+		text-decoration: none;
+	}
+
+	.top-actions {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		color: #4d5a6f;
+	}
+
+	.top-actions button {
+		padding: 7px 10px;
+	}
+
+	.auth-panel {
+		display: grid;
+		place-items: center;
+		padding: 36px 18px 72px;
+	}
+
+	.auth-form {
+		width: min(100%, 420px);
+		display: grid;
+		gap: 16px;
+		background: #fff;
+		border: 1px solid #dbe1ec;
+		border-radius: 8px;
+		padding: 22px;
+	}
+
+	#authMode {
+		margin: 0 0 6px;
+		color: #667085;
+		font-weight: 700;
+	}
+
+	#authHint {
+		margin: 10px 0 0;
+		color: #667085;
+		line-height: 1.55;
+	}
+
+	.workspace {
+		display: grid;
+		grid-template-columns: minmax(260px, 340px) 1fr;
+		min-height: 0;
+	}
+
+	.sidebar {
+		border-right: 1px solid #dbe1ec;
+		background: #fff;
+		padding: 14px;
+		overflow: auto;
+	}
+
+	.sidebar-tools {
+		display: grid;
+		grid-template-columns: 1fr 110px auto;
+		gap: 8px;
+		position: sticky;
+		top: 0;
+		background: #fff;
+		padding-bottom: 12px;
+	}
+
+	input,
+	select,
+	textarea {
+		width: 100%;
+		box-sizing: border-box;
+		border: 1px solid #ccd4e2;
+		border-radius: 6px;
+		background: #fff;
+		padding: 10px 11px;
+	}
+
+	textarea {
+		resize: vertical;
+		line-height: 1.55;
+	}
+
+	.post-list {
+		display: grid;
+		gap: 8px;
+	}
+
+	.post-row {
+		display: grid;
+		gap: 4px;
+		text-align: left;
+		padding: 12px;
+	}
+
+	.post-row span {
+		font-weight: 750;
+	}
+
+	.post-row small,
+	label,
+	#editorState,
+	.empty {
+		color: #667085;
+	}
+
+	.post-row.active {
+		border-color: #18202f;
+		background: #f0f4ff;
+	}
+
+	.editor {
+		padding: 22px;
+		display: grid;
+		gap: 16px;
+		align-content: start;
+		overflow: auto;
+	}
+
+	.editor-head,
+	.editor-actions,
+	.media-row {
+		display: flex;
+		align-items: end;
+		gap: 10px;
+	}
+
+	.editor-head {
+		justify-content: space-between;
+		align-items: center;
+		border-bottom: 1px solid #dbe1ec;
+		padding-bottom: 18px;
+	}
+
+	#editorState {
+		margin: 0 0 6px;
+	}
+
+	h1 {
+		font-size: clamp(1.8rem, 5vw, 3rem);
+		line-height: 1;
+		margin: 0;
+	}
+
+	.field-grid {
+		display: grid;
+		grid-template-columns: 1fr 0.7fr;
+		gap: 14px;
+	}
+
+	label {
+		display: grid;
+		gap: 7px;
+		font-weight: 700;
+	}
+
+	.file-field {
+		min-width: 220px;
+	}
+
+	.primary {
+		background: #18202f;
+		border-color: #18202f;
+		color: #fff;
+	}
+
+	.danger {
+		border-color: #e7b8b8;
+		color: #9f1d1d;
+	}
+
+	.message {
+		min-height: 24px;
+		color: #17663a;
+		font-weight: 700;
+	}
+
+	.message.error {
+		color: #9f1d1d;
+	}
+
+	@media (max-width: 900px) {
+		.workspace,
+		.field-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.sidebar {
+			border-right: 0;
+			border-bottom: 1px solid #dbe1ec;
+		}
+
+		.editor-head,
+		.media-row {
+			align-items: stretch;
+			flex-direction: column;
+		}
+
+		.sidebar-tools {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>
