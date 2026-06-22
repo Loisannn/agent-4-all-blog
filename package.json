@@ -7,11 +7,27 @@
   },
   "scripts": {
     "dev": "astro dev",
+    "pages:dev": "wrangler pages dev dist",
+    "pages:deploy": "wrangler pages deploy dist",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "build": "astro build",
+    "typecheck": "tsc --noEmit",
     "preview": "astro preview",
+    "test": "vitest run",
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^6.4.7"
+    "astro": "^6.4.7",
+    "markdown-it": "^14.2.0",
+    "sanitize-html": "^2.17.5"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260621.1",
+    "@types/markdown-it": "^14.1.2",
+    "@types/sanitize-html": "^2.16.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9",
+    "wrangler": "^4.103.0"
   }
 }

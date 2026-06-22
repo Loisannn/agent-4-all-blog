@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "agent-4-all-blog",
+  "compatibility_date": "2026-06-22",
+  "pages_build_output_dir": "./dist",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "agent_4_all_blog_cms",
+      "database_id": "38bd290c-762e-4b24-9122-95cbb98b6834",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA_BUCKET",
+      "bucket_name": "agent-4-all-blog-media"
+    }
+  ],
+  "vars": {
+    "AUTH_SETUP_TOKEN": ""
+  }
+}

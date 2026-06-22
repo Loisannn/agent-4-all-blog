@@ -9,9 +9,97 @@
 		<link rel="icon" href="/favicon.ico" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<title>Agent 4 All Blog</title>
 	</head>
 	<body>
-		<h1>Astro</h1>
+		<main class="shell">
+			<header>
+				<a class="brand" href="/">Agent 4 All</a>
+				<nav>
+					<a href="/blog">Blog</a>
+					<a href="/admin">CMS</a>
+				</nav>
+			</header>
+			<section class="hero">
+				<p>Cloudflare Pages CMS</p>
+				<h1>Agent 4 All Blog</h1>
+				<a class="primary" href="/blog">Open blog</a>
+			</section>
+		</main>
 	</body>
 </html>
+
+<style>
+	:root {
+		color-scheme: light;
+		font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+		color: #18202f;
+		background: #f7f8fb;
+	}
+
+	body {
+		margin: 0;
+	}
+
+	a {
+		color: inherit;
+	}
+
+	.shell {
+		width: min(100% - 32px, 1040px);
+		margin: 0 auto;
+		padding: 28px 0;
+	}
+
+	header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+	}
+
+	.brand {
+		font-weight: 800;
+		text-decoration: none;
+	}
+
+	nav {
+		display: flex;
+		gap: 12px;
+	}
+
+	nav a,
+	.primary {
+		border: 1px solid #cfd6e4;
+		border-radius: 6px;
+		background: white;
+		padding: 9px 13px;
+		text-decoration: none;
+	}
+
+	.hero {
+		min-height: 58vh;
+		display: grid;
+		align-content: center;
+		gap: 18px;
+	}
+
+	.hero p {
+		color: #667085;
+		margin: 0;
+	}
+
+	h1 {
+		font-size: clamp(2.5rem, 9vw, 5.8rem);
+		line-height: 0.98;
+		margin: 0;
+		max-width: 760px;
+	}
+
+	.primary {
+		width: fit-content;
+		background: #18202f;
+		color: white;
+		border-color: #18202f;
+	}
+</style>
