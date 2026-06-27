@@ -40,7 +40,7 @@ function renderPost(post: PostRecord, origin: string): string {
         <aside class="article-aside" aria-label="Article navigation">
           <div class="reading-rail" aria-hidden="true"><span class="rail-mark"></span></div>
           <nav>
-            <p class="toc-label">On this page</p>
+            <p class="toc-label">Contents</p>
             ${headings.length ? `<ol class="toc-list">${headings.map((h) => `<li><a href="#${escapeAttribute(h.id)}">${escapeHtml(h.text)}</a></li>`).join('')}</ol>` : '<p class="toc-list">Article</p>'}
           </nav>
         </aside>
