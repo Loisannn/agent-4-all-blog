@@ -267,11 +267,43 @@ button:hover {
   color: var(--color-danger);
 }
 
+/* ── Text-only buttons (no border, no background) ── */
+.btn-text {
+  height: var(--box-height);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 0;
+  background: transparent;
+  color: var(--color-ink-soft);
+  padding: 0 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 160ms var(--ease-out);
+}
+
+.btn-text:hover {
+  color: var(--color-ink);
+}
+
+.btn-text-danger {
+  color: var(--color-danger);
+}
+
+.btn-text-danger:hover {
+  color: color-mix(in oklch, var(--color-danger), black 20%);
+}
+
 button:disabled,
 .button[aria-disabled="true"],
 .btn-primary:disabled,
 .btn-secondary:disabled,
-.btn-danger:disabled {
+.btn-danger:disabled,
+.btn-text:disabled {
   cursor: not-allowed;
   opacity: 0.45;
 }
@@ -875,6 +907,33 @@ textarea:focus-visible {
   font-weight: 650;
 }
 
+/* ── File Input ── */
+input[type="file"] {
+  display: flex;
+  align-items: center;
+  padding: 0 0.5rem;
+  line-height: 1;
+}
+
+input[type="file"]::file-selector-button {
+  height: calc(var(--box-height) - 0.5rem);
+  margin-right: 0.5rem;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-canvas);
+  color: var(--color-ink-soft);
+  padding: 0 0.75rem;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 120ms var(--ease-out), color 120ms var(--ease-out);
+}
+
+input[type="file"]::file-selector-button:hover {
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
 /* ── Field Layouts ── */
 .field-row {
   display: grid;
@@ -1296,6 +1355,7 @@ textarea:focus-visible {
   .btn-primary,
   .btn-secondary,
   .btn-danger,
+  .btn-text,
   input,
   select {
     min-height: 46px;

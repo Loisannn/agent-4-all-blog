@@ -1,5 +1,4 @@
 ---
-
 ---
 
 <html lang="zh-CN">
@@ -19,8 +18,7 @@
 				<a class="topbar-brand" href="/">Agent4All CMS</a>
 				<div class="topbar-right">
 					<span class="topbar-user" id="userEmail">Checking session</span>
-					<a class="topbar-link" href="/blog">Blog</a>
-					<button id="logoutButton" class="btn-secondary" type="button" hidden>退出</button>
+					<button id="logoutButton" class="btn-text" type="button" hidden>退出</button>
 				</div>
 			</header>
 
@@ -73,8 +71,9 @@
 								<h1 id="editorTitle">新文章</h1>
 							</div>
 							<div class="editor-actions">
-								<button id="deleteButton" class="btn-danger" type="button">删除</button>
-								<button id="saveDraftButton" class="btn-secondary" type="button">存草稿</button>
+								<button id="deleteButton" class="btn-text btn-text-danger" type="button">删除</button>
+								<button id="unpublishButton" class="btn-text" type="button" hidden>取消发布</button>
+								<button id="saveDraftButton" class="btn-text" type="button">存草稿</button>
 								<button id="publishButton" class="btn-primary" type="button">发布</button>
 							</div>
 						</header>
@@ -110,8 +109,8 @@
 									图片
 									<input id="mediaInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
 								</label>
-								<button id="uploadCoverButton" class="btn-secondary" type="button">设为封面</button>
-								<button id="insertImageButton" class="btn-secondary" type="button">插入正文</button>
+								<button id="uploadCoverButton" class="btn-text" type="button">设为封面</button>
+								<button id="insertImageButton" class="btn-text" type="button">插入正文</button>
 							</div>
 
 							<label class="content-field">
@@ -130,6 +129,7 @@
 							<span class="media-toolbar-count" id="mediaCount"></span>
 						</div>
 						<div id="mediaContent" class="media-grid"></div>
+						<div id="mediaMessage" class="message" role="status"></div>
 					</div>
 				</div>
 			</div>
@@ -157,6 +157,7 @@
 				cover: document.querySelector('#coverInput'),
 				authorName: document.querySelector('#authorNameInput'),
 				delete: document.querySelector('#deleteButton'),
+				unpublish: document.querySelector('#unpublishButton'),
 				editorState: document.querySelector('#editorState'),
 				editorTitle: document.querySelector('#editorTitle'),
 				excerpt: document.querySelector('#excerptInput'),
@@ -166,6 +167,7 @@
 				mediaContent: document.querySelector('#mediaContent'),
 				mediaCount: document.querySelector('#mediaCount'),
 				mediaPanel: document.querySelector('#mediaPanel'),
+				mediaMessage: document.querySelector('#mediaMessage'),
 				message: document.querySelector('#message'),
 				newPost: document.querySelector('#newPostButton'),
 				postList: document.querySelector('#postList'),
@@ -196,6 +198,7 @@
 				els.newPost.addEventListener('click', resetEditor);
 				els.saveDraft.addEventListener('click', () => savePost('draft'));
 				els.publish.addEventListener('click', () => savePost('published'));
+				els.unpublish.addEventListener('click', () => savePost('draft', true));
 				els.delete.addEventListener('click', deleteCurrentPost);
 				els.uploadCover.addEventListener('click', () => uploadImage('cover'));
 				els.insertImage.addEventListener('click', () => uploadImage('insert'));
@@ -360,7 +363,8 @@
 				els.content.value = post.content_markdown;
 				els.editorTitle.textContent = post.title;
 				els.editorState.textContent = post.status === 'published' ? 'Published' : 'Draft';
-				els.publish.textContent = post.status === 'published' ? '取消发布' : '发布';
+				els.publish.textContent = post.status === 'published' ? '更新发布' : '发布';
+				els.unpublish.hidden = post.status !== 'published';
 				els.delete.disabled = false;
 			}
 
@@ -376,12 +380,24 @@
 				els.editorTitle.textContent = '新文章';
 				els.editorState.textContent = 'Draft';
 				els.publish.textContent = '发布';
+				els.unpublish.hidden = true;
 				els.delete.disabled = true;
 				renderPostList();
 			}
 
-			async function savePost(nextStatus) {
-				const status = state.current?.status === 'published' && nextStatus === 'published' ? 'draft' : nextStatus;
+			async function savePost(nextStatus, unpublish = false) {
+				let status;
+				if (unpublish) {
+					/* Explicit unpublish: force to draft */
+					status = 'draft';
+				} else if (state.current?.status === 'published' && nextStatus === 'published') {
+					/* Updating a published post: keep it published (republish) */
+					status = 'published';
+				} else {
+					/* Normal save */
+					status = nextStatus;
+				}
+
 				const body = {
 					title: els.title.value,
 					slug: els.slug.value,
@@ -403,7 +419,7 @@
 					state.current = post;
 					fillEditor(post);
 					await loadPosts();
-					showMessage('已保存');
+					showMessage(unpublish ? '已取消发布' : '已保存');
 				} catch (error) {
 					showMessage(error.message, true);
 				}
@@ -411,6 +427,8 @@
 
 			async function deleteCurrentPost() {
 				if (!state.current) return;
+				const confirmed = confirm('确认删除这篇文章？此操作不可撤销。');
+				if (!confirmed) return;
 				try {
 					await api(`/api/admin/posts/${state.current.id}`, { method: 'DELETE' });
 					resetEditor();
@@ -467,32 +485,35 @@
 					return;
 				}
 
-				els.mediaContent.innerHTML = state.media.map((asset) => `
-					<article class="media-card">
-						<div class="media-card-preview">
-							${asset.mime_type.startsWith('image/')
-								? `<img src="/media/${encodeURIComponent(asset.key)}" alt="${escapeHtml(asset.filename)}" loading="lazy" />`
-								: `<span class="media-icon">&#128196;</span>`
-							}
-						</div>
-						<div class="media-card-body">
-							<span class="media-card-filename">${escapeHtml(asset.filename)}</span>
-							<span class="media-card-meta">
-								<span>${formatBytes(asset.size)}</span>
-								<span>${new Date(asset.uploaded_at).toLocaleDateString()}</span>
-							</span>
-							<button class="btn-secondary media-refs-toggle" data-id="${asset.id}" type="button" style="height:auto;padding:0.25rem 0.5rem;font-size:0.75rem;margin-top:var(--space-1);">
-								查看引用
-							</button>
-							<div id="refs-${asset.id}" class="media-card-refs" hidden></div>
-						</div>
-						<div class="media-card-actions">
-							<button class="btn-danger media-delete-btn" data-id="${asset.id}" data-key="${escapeHtml(asset.key)}" type="button">
-								删除
-							</button>
-						</div>
-					</article>
-				`).join('');
+				els.mediaContent.innerHTML = state.media.map((asset) => {
+					const safeKey = escapeHtml(asset.key);
+					return `
+						<article class="media-card">
+							<div class="media-card-preview">
+								${asset.mime_type.startsWith('image/')
+									? `<img src="/media/${encodeURIComponent(asset.key)}" alt="${safeKey}" loading="lazy" />`
+									: `<span class="media-icon">&#128196;</span>`
+								}
+							</div>
+							<div class="media-card-body">
+								<span class="media-card-filename">${safeKey}</span>
+								<span class="media-card-meta">
+									<span>${formatBytes(asset.size)}</span>
+									<span>${new Date(asset.uploaded_at).toLocaleDateString()}</span>
+								</span>
+								<button class="btn-text media-refs-toggle" data-id="${asset.id}" type="button" style="height:auto;padding:0.25rem 0.5rem;font-size:0.75rem;margin-top:var(--space-1);">
+									查看引用
+								</button>
+								<div id="refs-${asset.id}" class="media-card-refs" hidden></div>
+							</div>
+							<div class="media-card-actions">
+								<button class="btn-text btn-text-danger media-delete-btn" data-id="${asset.id}" data-key="${safeKey}" type="button">
+									删除
+								</button>
+							</div>
+						</article>
+					`;
+				}).join('');
 
 				/* Bind media card events */
 				els.mediaContent.querySelectorAll('.media-refs-toggle').forEach((btn) => {
@@ -540,18 +561,18 @@
 			}
 
 			async function deleteMediaAsset(id, key) {
-				/* First check for references */
+				/* Check for references first */
 				try {
 					const { referencingPosts } = await api(`/api/admin/media?id=${id}`);
 					if (referencingPosts.length > 0) {
 						const postNames = referencingPosts.map((p) => `"${p.title}"`).join('、');
-						const confirmed = confirm(
+						alert(
 							`无法删除此媒体文件。它被以下 ${referencingPosts.length} 篇文章引用：\n\n${postNames}\n\n请先在 CMS 中删除这些文章，然后再删除此媒体文件。`
 						);
 						return;
 					}
 				} catch (error) {
-					showMessage(`检查引用失败：${error.message}`, true);
+					showMediaMessage(`检查引用失败：${error.message}`, true);
 					return;
 				}
 
@@ -560,10 +581,10 @@
 
 				try {
 					await api(`/api/admin/media?id=${id}`, { method: 'DELETE' });
-					showMessage('媒体文件已删除');
+					showMediaMessage('媒体文件已删除');
 					await loadMediaAssets();
 				} catch (error) {
-					showMessage(error.message, true);
+					showMediaMessage(error.message, true);
 				}
 			}
 
@@ -588,6 +609,11 @@
 			function showMessage(message, isError = false) {
 				els.message.textContent = message;
 				els.message.classList.toggle('error', isError);
+			}
+
+			function showMediaMessage(message, isError = false) {
+				els.mediaMessage.textContent = message;
+				els.mediaMessage.classList.toggle('error', isError);
 			}
 
 			function showAuthMessage(message, isError = false) {
