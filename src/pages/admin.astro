@@ -24,24 +24,16 @@
 				</div>
 			</header>
 
+			<!-- ── Auth Panel (minimal, no card) ── -->
 			<section id="authPanel" class="auth-panel">
 				<form id="authForm" class="auth-form">
-					<div>
-						<p id="authMode" class="auth-kicker">Login</p>
-						<h1 id="authTitle">登录 Agent4All CMS</h1>
-						<p id="authHint" class="auth-hint">使用管理员邮箱和密码登录后台。</p>
-					</div>
-					<label id="nameField" hidden>
-						名称
-						<input id="authName" autocomplete="name" />
-					</label>
 					<label>
 						邮箱
-						<input id="authEmail" type="email" autocomplete="email" required />
+						<input id="authEmail" type="email" autocomplete="email" required placeholder="admin@example.com" />
 					</label>
 					<label>
 						密码
-						<input id="authPassword" type="password" autocomplete="current-password" minlength="8" required />
+						<input id="authPassword" type="password" autocomplete="current-password" minlength="8" required placeholder="········" />
 					</label>
 					<label id="setupTokenField" hidden>
 						初始化 token
@@ -66,66 +58,84 @@
 					<div id="postList" class="post-list"></div>
 				</aside>
 
-				<form id="editor" class="editor">
-					<header class="editor-head">
-						<div>
-							<p id="editorState" class="editor-state-badge">Draft</p>
-							<h1 id="editorTitle">新文章</h1>
-						</div>
-						<div class="editor-actions">
-							<button id="deleteButton" class="btn-danger" type="button">删除</button>
-							<button id="saveDraftButton" class="btn-secondary" type="button">存草稿</button>
-							<button id="publishButton" class="btn-primary" type="button">发布</button>
-						</div>
-					</header>
+				<!-- ── Editor / Media / Content panels ── -->
+				<div id="contentPanel">
+					<nav class="cms-nav" id="cmsNav">
+						<button class="cms-nav-tab active" data-tab="editor">文章编辑</button>
+						<button class="cms-nav-tab" data-tab="media">媒体管理</button>
+					</nav>
 
-					<div class="editor-body">
-						<label>
-							标题
-							<input id="titleInput" name="title" placeholder="文章标题" required />
-						</label>
+					<!-- ── Post Editor ── -->
+					<form id="editor" class="editor">
+						<header class="editor-head">
+							<div>
+								<p id="editorState" class="editor-state-badge">Draft</p>
+								<h1 id="editorTitle">新文章</h1>
+							</div>
+							<div class="editor-actions">
+								<button id="deleteButton" class="btn-danger" type="button">删除</button>
+								<button id="saveDraftButton" class="btn-secondary" type="button">存草稿</button>
+								<button id="publishButton" class="btn-primary" type="button">发布</button>
+							</div>
+						</header>
 
-						<div class="field-row field-row-3">
+						<div class="editor-body">
 							<label>
-								Slug
-								<input id="slugInput" name="slug" placeholder="自动生成" />
+								标题
+								<input id="titleInput" name="title" placeholder="文章标题" required />
 							</label>
+
+							<div class="field-row field-row-3">
+								<label>
+									Slug
+									<input id="slugInput" name="slug" placeholder="自动生成" />
+								</label>
+								<label>
+									分类
+									<input id="categoryInput" name="category" placeholder="例如：AI、技术" />
+								</label>
+								<label>
+									作者
+									<input id="authorNameInput" name="author_name" placeholder="发布者名称" />
+								</label>
+							</div>
+
 							<label>
-								分类
-								<input id="categoryInput" name="category" placeholder="例如：AI、技术" />
+								摘要
+								<textarea id="excerptInput" name="excerpt" rows="2" placeholder="简短描述…"></textarea>
 							</label>
-							<label>
-								作者
-								<input id="authorNameInput" name="author_name" placeholder="发布者名称" />
+
+							<div class="media-row">
+								<label>
+									封面 key
+									<input id="coverInput" name="cover_image_key" placeholder="media/uploads/cover.webp" />
+								</label>
+								<label class="file-field">
+									图片
+									<input id="mediaInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
+								</label>
+								<button id="uploadCoverButton" class="btn-secondary" type="button">设为封面</button>
+								<button id="insertImageButton" class="btn-secondary" type="button">插入正文</button>
+							</div>
+
+							<label class="content-field">
+								正文 Markdown
+								<textarea id="contentInput" name="content_markdown" rows="20" placeholder="开始写作…" required></textarea>
 							</label>
 						</div>
 
-						<label>
-							摘要
-							<textarea id="excerptInput" name="excerpt" rows="2" placeholder="简短描述…"></textarea>
-						</label>
+						<div id="message" class="message" role="status"></div>
+					</form>
 
-						<div class="media-row">
-							<label>
-								封面 key
-								<input id="coverInput" name="cover_image_key" placeholder="media/uploads/cover.webp" />
-							</label>
-							<label class="file-field">
-								图片
-								<input id="mediaInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
-							</label>
-							<button id="uploadCoverButton" class="btn-secondary" type="button">设为封面</button>
-							<button id="insertImageButton" class="btn-secondary" type="button">插入正文</button>
+					<!-- ── Media Management Panel ── -->
+					<div id="mediaPanel" class="media-panel" hidden>
+						<div class="media-toolbar">
+							<span class="media-toolbar-title">媒体库</span>
+							<span class="media-toolbar-count" id="mediaCount"></span>
 						</div>
-
-						<label class="content-field">
-							正文 Markdown
-							<textarea id="contentInput" name="content_markdown" rows="20" placeholder="开始写作…" required></textarea>
-						</label>
+						<div id="mediaContent" class="media-grid"></div>
 					</div>
-
-					<div id="message" class="message" role="status"></div>
-				</form>
+				</div>
 			</div>
 		</div>
 
@@ -135,20 +145,18 @@
 				current: null,
 				setupRequired: false,
 				status: 'draft',
+				activeTab: 'editor',
+				media: [],
 			};
 
 			const els = {
 				authEmail: document.querySelector('#authEmail'),
 				authForm: document.querySelector('#authForm'),
-				authHint: document.querySelector('#authHint'),
 				authMessage: document.querySelector('#authMessage'),
-				authMode: document.querySelector('#authMode'),
-				authName: document.querySelector('#authName'),
 				authPanel: document.querySelector('#authPanel'),
 				authPassword: document.querySelector('#authPassword'),
 				authSetupToken: document.querySelector('#authSetupToken'),
 				authSubmit: document.querySelector('#authSubmit'),
-				authTitle: document.querySelector('#authTitle'),
 				content: document.querySelector('#contentInput'),
 				cover: document.querySelector('#coverInput'),
 				category: document.querySelector('#categoryInput'),
@@ -160,9 +168,11 @@
 				insertImage: document.querySelector('#insertImageButton'),
 				logout: document.querySelector('#logoutButton'),
 				media: document.querySelector('#mediaInput'),
+				mediaContent: document.querySelector('#mediaContent'),
+				mediaCount: document.querySelector('#mediaCount'),
+				mediaPanel: document.querySelector('#mediaPanel'),
 				message: document.querySelector('#message'),
 				newPost: document.querySelector('#newPostButton'),
-				nameField: document.querySelector('#nameField'),
 				postList: document.querySelector('#postList'),
 				publish: document.querySelector('#publishButton'),
 				saveDraft: document.querySelector('#saveDraftButton'),
@@ -174,6 +184,7 @@
 				uploadCover: document.querySelector('#uploadCoverButton'),
 				userEmail: document.querySelector('#userEmail'),
 				workspace: document.querySelector('#workspace'),
+				editor: document.querySelector('#editor'),
 			};
 
 			init();
@@ -198,8 +209,31 @@
 				els.title.addEventListener('input', () => {
 					els.editorTitle.textContent = els.title.value || '新文章';
 				});
+
+				/* CMS tab navigation */
+				document.querySelectorAll('.cms-nav-tab').forEach((tab) => {
+					tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+				});
 			}
 
+			/* ── Tab Switching ── */
+			function switchTab(tab) {
+				state.activeTab = tab;
+				document.querySelectorAll('.cms-nav-tab').forEach((t) => {
+					t.classList.toggle('active', t.dataset.tab === tab);
+				});
+
+				if (tab === 'editor') {
+					els.editor.hidden = false;
+					els.mediaPanel.hidden = true;
+				} else if (tab === 'media') {
+					els.editor.hidden = true;
+					els.mediaPanel.hidden = false;
+					loadMediaAssets();
+				}
+			}
+
+			/* ── Auth ── */
 			async function checkAuth() {
 				try {
 					const status = await api('/api/auth/status');
@@ -221,13 +255,7 @@
 				els.authPanel.hidden = false;
 				els.logout.hidden = true;
 				els.userEmail.textContent = setupRequired ? 'Setup required' : 'Not logged in';
-				els.nameField.hidden = !setupRequired;
 				els.setupTokenField.hidden = !setupRequired;
-				els.authMode.textContent = setupRequired ? 'Setup' : 'Login';
-				els.authTitle.textContent = setupRequired ? '创建第一个管理员' : '登录 Agent4All CMS';
-				els.authHint.textContent = setupRequired
-					? '当前还没有管理员。创建第一个账号后，初始化入口会自动关闭。'
-					: '使用管理员邮箱和密码登录后台。';
 				els.authSubmit.textContent = setupRequired ? '创建管理员' : '登录';
 				els.authPassword.autocomplete = setupRequired ? 'new-password' : 'current-password';
 				els.authEmail.focus();
@@ -247,7 +275,7 @@
 				const body = {
 					email: els.authEmail.value,
 					password: els.authPassword.value,
-					name: els.authName.value,
+					name: '',
 					setupToken: els.authSetupToken.value,
 				};
 				const path = state.setupRequired ? '/api/auth/setup' : '/api/auth/login';
@@ -275,6 +303,7 @@
 				}
 			}
 
+			/* ── Posts ── */
 			async function loadPosts() {
 				const params = new URLSearchParams();
 				if (els.statusFilter.value) params.set('status', els.statusFilter.value);
@@ -400,6 +429,7 @@
 				}
 			}
 
+			/* ── Media Upload ── */
 			async function uploadImage(mode) {
 				const file = els.media.files?.[0];
 				if (!file) {
@@ -426,6 +456,126 @@
 				}
 			}
 
+			/* ── Media Management ── */
+			async function loadMediaAssets() {
+				try {
+					const { assets } = await api('/api/admin/media');
+					state.media = assets;
+					renderMediaGrid();
+				} catch (error) {
+					els.mediaContent.innerHTML = `<p class="empty-state">加载媒体库失败：${escapeHtml(error.message)}</p>`;
+				}
+			}
+
+			function renderMediaGrid() {
+				els.mediaCount.textContent = state.media.length ? `(${state.media.length} 个文件)` : '';
+
+				if (!state.media.length) {
+					els.mediaContent.innerHTML = '<p class="empty-state">媒体库为空。上传图片后在此处管理。</p>';
+					return;
+				}
+
+				els.mediaContent.innerHTML = state.media.map((asset) => `
+					<article class="media-card">
+						<div class="media-card-preview">
+							${asset.mime_type.startsWith('image/')
+								? `<img src="/media/${encodeURIComponent(asset.key)}" alt="${escapeHtml(asset.filename)}" loading="lazy" />`
+								: `<span class="media-icon">&#128196;</span>`
+							}
+						</div>
+						<div class="media-card-body">
+							<span class="media-card-filename">${escapeHtml(asset.filename)}</span>
+							<span class="media-card-meta">
+								<span>${formatBytes(asset.size)}</span>
+								<span>${new Date(asset.uploaded_at).toLocaleDateString()}</span>
+							</span>
+							<button class="btn-secondary media-refs-toggle" data-id="${asset.id}" type="button" style="height:auto;padding:0.25rem 0.5rem;font-size:0.75rem;margin-top:var(--space-1);">
+								查看引用
+							</button>
+							<div id="refs-${asset.id}" class="media-card-refs" hidden></div>
+						</div>
+						<div class="media-card-actions">
+							<button class="btn-danger media-delete-btn" data-id="${asset.id}" data-key="${escapeHtml(asset.key)}" type="button">
+								删除
+							</button>
+						</div>
+					</article>
+				`).join('');
+
+				/* Bind media card events */
+				els.mediaContent.querySelectorAll('.media-refs-toggle').forEach((btn) => {
+					btn.addEventListener('click', () => toggleMediaRefs(Number(btn.dataset.id)));
+				});
+
+				els.mediaContent.querySelectorAll('.media-delete-btn').forEach((btn) => {
+					btn.addEventListener('click', () => deleteMediaAsset(Number(btn.dataset.id), btn.dataset.key));
+				});
+			}
+
+			async function toggleMediaRefs(id) {
+				const refDiv = document.querySelector(`#refs-${id}`);
+				if (!refDiv) return;
+
+				if (!refDiv.hidden) {
+					refDiv.hidden = true;
+					return;
+				}
+
+				try {
+					const { referencingPosts } = await api(`/api/admin/media?id=${id}`);
+					if (referencingPosts.length === 0) {
+						refDiv.innerHTML = '<p style="margin:0;color:var(--color-muted);">未被任何文章引用</p>';
+					} else {
+						refDiv.innerHTML = `
+							<details open>
+								<summary>被 ${referencingPosts.length} 篇文章引用</summary>
+								<ul>
+									${referencingPosts.map((p) => `
+										<li>
+											<a href="/blog/${encodeURIComponent(p.slug)}" target="_blank">${escapeHtml(p.title)}</a>
+											<span class="post-ref-status">${p.status === 'published' ? '已发布' : '草稿'}</span>
+										</li>
+									`).join('')}
+								</ul>
+							</details>
+						`;
+					}
+					refDiv.hidden = false;
+				} catch (error) {
+					refDiv.innerHTML = `<p style="margin:0;color:var(--color-danger);">加载失败：${escapeHtml(error.message)}</p>`;
+					refDiv.hidden = false;
+				}
+			}
+
+			async function deleteMediaAsset(id, key) {
+				/* First check for references */
+				try {
+					const { referencingPosts } = await api(`/api/admin/media?id=${id}`);
+					if (referencingPosts.length > 0) {
+						const postNames = referencingPosts.map((p) => `"${p.title}"`).join('、');
+						const confirmed = confirm(
+							`无法删除此媒体文件。它被以下 ${referencingPosts.length} 篇文章引用：\n\n${postNames}\n\n请先在 CMS 中删除这些文章，然后再删除此媒体文件。`
+						);
+						return;
+					}
+				} catch (error) {
+					showMessage(`检查引用失败：${error.message}`, true);
+					return;
+				}
+
+				const confirmed = confirm(`确认删除媒体文件 "${key}"？此操作不可撤销。`);
+				if (!confirmed) return;
+
+				try {
+					await api(`/api/admin/media?id=${id}`, { method: 'DELETE' });
+					showMessage('媒体文件已删除');
+					await loadMediaAssets();
+				} catch (error) {
+					showMessage(error.message, true);
+				}
+			}
+
+			/* ── Utilities ── */
 			async function api(path, options = {}) {
 				const response = await fetch(path, options);
 				const payload = await response.json().catch(() => null);
@@ -469,6 +619,12 @@
 					'"': '&quot;',
 					"'": '&#39;',
 				})[char]);
+			}
+
+			function formatBytes(bytes) {
+				if (bytes < 1024) return `${bytes} B`;
+				if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
+				return `${(bytes / 1048576).toFixed(1)} MB`;
 			}
 		</script>
 	</body>

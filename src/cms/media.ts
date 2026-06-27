@@ -1,4 +1,4 @@
-import type { Env, MediaAssetRecord } from './types';
+import type { Env, MediaAssetRecord, PostRecord } from './types';
 
 export const maxUploadBytes = 5 * 1024 * 1024;
 
@@ -84,4 +84,57 @@ function safeFilename(filename: string): string {
     .replace(/[^a-z0-9]+/g, '');
 
   return extension ? `${base}.${extension}` : base;
+}
+
+/* ── Media Management ── */
+
+export async function listMediaAssets(env: Env): Promise<MediaAssetRecord[]> {
+  const result = await env.DB.prepare(`
+    SELECT id, key, filename, mime_type, size, uploaded_at, uploaded_by
+    FROM media_assets
+    ORDER BY uploaded_at DESC
+    LIMIT 200
+  `).all<MediaAssetRecord>();
+
+  return result.results || [];
+}
+
+export async function getMediaAsset(env: Env, id: number): Promise<MediaAssetRecord | null> {
+  return env.DB.prepare(`
+    SELECT id, key, filename, mime_type, size, uploaded_at, uploaded_by
+    FROM media_assets
+    WHERE id = ?
+  `).bind(id).first<MediaAssetRecord>();
+}
+
+export interface MediaRefPost {
+  id: number;
+  title: string;
+  slug: string;
+  status: string;
+}
+
+export async function findPostsReferencingMedia(env: Env, mediaKey: string): Promise<MediaRefPost[]> {
+  const result = await env.DB.prepare(`
+    SELECT id, title, slug, status
+    FROM posts
+    WHERE cover_image_key = ?
+       OR content_markdown LIKE ?
+       OR content_html LIKE ?
+    ORDER BY updated_at DESC
+  `).bind(mediaKey, `%${mediaKey}%`, `%${mediaKey}%`).all<MediaRefPost>();
+
+  return result.results || [];
+}
+
+export async function deleteMediaAsset(env: Env, id: number): Promise<MediaAssetRecord | null> {
+  const asset = await getMediaAsset(env, id);
+  if (!asset) {
+    return null;
+  }
+
+  await env.MEDIA_BUCKET.delete(asset.key);
+  await env.DB.prepare('DELETE FROM media_assets WHERE id = ?').bind(id).run();
+
+  return asset;
 }
