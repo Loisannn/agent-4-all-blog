@@ -40,7 +40,6 @@ function renderPost(post: PostRecord, origin: string): string {
         <aside class="article-aside" aria-label="Article navigation">
           <div class="reading-rail" aria-hidden="true"><span class="rail-mark"></span></div>
           <nav>
-            <a class="admin-link" href="/blog">All posts</a>
             <p class="toc-label">On this page</p>
             ${headings.length ? `<ol class="toc-list">${headings.map((h) => `<li><a href="#${escapeAttribute(h.id)}">${escapeHtml(h.text)}</a></li>`).join('')}</ol>` : '<p class="toc-list">Article</p>'}
           </nav>
@@ -93,7 +92,7 @@ interface HeadingItem {
 }
 
 function extractHeadings(html: string): HeadingItem[] {
-  return Array.from(html.matchAll(/<h([23])\s[^>]*id="([^"]*)"[^>]*>(.*?)<\/h[23]>/g))
+  return Array.from(html.matchAll(/<h([123])\s[^>]*id="([^"]*)"[^>]*>(.*?)<\/h[123]>/g))
     .map((match) => ({ id: match[2], text: stripHtml(match[3]).trim() }))
     .filter((h) => h.text)
     .slice(0, 6);
@@ -101,7 +100,7 @@ function extractHeadings(html: string): HeadingItem[] {
 
 function addHeadingIds(html: string): string {
   const seen = new Map<string, number>();
-  return html.replace(/<(h[23])([^>]*)>(.*?)<\/\1>/g, (_full: string, tag: string, attrs: string, body: string) => {
+  return html.replace(/<(h[123])([^>]*)>(.*?)<\/\1>/g, (_full: string, tag: string, attrs: string, body: string) => {
     /* Skip if already has an id */
     if (/\bid\s*=\s*"/.test(attrs)) return _full;
     const text = stripHtml(body).trim();

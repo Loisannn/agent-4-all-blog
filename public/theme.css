@@ -47,6 +47,7 @@
 html {
   min-width: 320px;
   scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--box-height) + var(--space-3));
 }
 
 body {
@@ -139,7 +140,8 @@ img {
   align-items: center;
   gap: var(--space-2);
   color: var(--color-ink-soft);
-  font-size: 0.875rem;
+  font-family: var(--font-editorial);
+  font-size: 0.95rem;
 }
 
 .site-nav a {
@@ -189,7 +191,8 @@ img {
 
 .home-link {
   color: var(--color-muted);
-  font-size: 0.95rem;
+  font-family: var(--font-editorial);
+  font-size: 1.1rem;
   font-weight: 500;
   text-decoration: none;
   transition: color 160ms var(--ease-out);
@@ -611,6 +614,7 @@ textarea:focus-visible {
   max-width: 68ch;
 }
 
+.content h1,
 .content h2,
 .content h3 {
   color: var(--color-primary);
@@ -619,6 +623,11 @@ textarea:focus-visible {
   letter-spacing: -0.02em;
   line-height: 1.15;
   text-wrap: balance;
+}
+
+.content h1 {
+  margin: 2.4em 0 0.5em;
+  font-size: clamp(2rem, 3.5vw, 2.8rem);
 }
 
 .content h2 {
