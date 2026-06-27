@@ -112,9 +112,7 @@ img {
 
 .site-shell {
   min-height: 100vh;
-  background:
-    linear-gradient(90deg, transparent 0, transparent calc(50% - 1px), oklch(0.92 0.006 205) calc(50% - 1px), oklch(0.92 0.006 205) 50%, transparent 50%) top center / min(100%, 74rem) 100% no-repeat,
-    var(--color-bg);
+  background: var(--color-bg);
 }
 
 .site-header {
@@ -193,8 +191,6 @@ img {
   font-size: clamp(3.1rem, 8vw, 6.2rem);
 }
 
-.home-deck,
-.journal-deck,
 .article-excerpt {
   max-width: 46rem;
   margin: var(--space-5) 0 0;
@@ -258,16 +254,6 @@ button:disabled,
 .button[aria-disabled="true"] {
   cursor: not-allowed;
   opacity: 0.48;
-}
-
-.home-note,
-.journal-note {
-  align-self: end;
-  border-top: 1px solid var(--color-border);
-  padding-top: var(--space-4);
-  color: var(--color-muted);
-  font-size: 0.94rem;
-  line-height: 1.65;
 }
 
 .journal-frame {

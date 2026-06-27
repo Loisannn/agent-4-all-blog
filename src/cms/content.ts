@@ -15,12 +15,24 @@ export function slugify(value: string): string {
     .normalize('NFKC')
     .trim()
     .toLowerCase()
-    .replace(/['’]/g, '')
-    .replace(/[^\p{L}\p{N}]+/gu, '-')
+    .replace(/['']/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .replace(/-{2,}/g, '-');
 
-  return slug || 'untitled';
+  if (!slug) {
+    return `post-${hash36(value)}`;
+  }
+
+  return slug;
+}
+
+function hash36(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash).toString(36).slice(0, 8);
 }
 
 export function renderMarkdown(value: string): string {

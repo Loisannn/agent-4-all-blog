@@ -35,11 +35,7 @@ function renderBlogIndex(posts: PostRecord[], origin: string): string {
       </header>
       <main id="main-content" class="journal-main">
         <section class="journal-hero" aria-labelledby="journal-title">
-          <div>
             <h1 id="journal-title" class="journal-title">Agent4All Blog</h1>
-            <p class="journal-deck">Product notes and engineering stories about building practical, reliable AI agents for real-world impact.</p>
-          </div>
-          <p class="journal-note">Read from top to bottom. Each entry opens into a focused article page with a quiet reading rail and technical prose measure.</p>
         </section>
         <section class="journal-frame" aria-label="Latest posts">
           <div class="margin-rail" aria-hidden="true"><span class="rail-mark"></span></div>

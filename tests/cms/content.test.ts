@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { createExcerpt, renderMarkdown, slugify } from '../../src/cms/content';
 
 describe('content helpers', () => {
-  it('creates readable unicode slugs', () => {
-    expect(slugify(' 第一篇 AI CMS! ')).toBe('第一篇-ai-cms');
-    expect(slugify('')).toBe('untitled');
+  it('creates ASCII-only url-safe slugs', () => {
+    expect(slugify(' 第一篇 AI CMS! ')).toBe('ai-cms');
+    expect(slugify('')).toBe('post-0');
   });
 
   it('renders markdown and removes unsafe html', () => {
