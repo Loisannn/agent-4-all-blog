@@ -474,7 +474,7 @@
 						<article class="media-card">
 							<div class="media-card-preview">
 								${asset.mime_type.startsWith('image/')
-									? `<img src="/media/${encodeURIComponent(asset.key)}" alt="${safeKey}" loading="lazy" />`
+									? `<img src="/media/${escapeHtml(asset.key)}" alt="${safeKey}" loading="lazy" />`
 									: `<span class="media-icon">&#128196;</span>`
 								}
 							</div>
