@@ -30,10 +30,6 @@ function renderPost(post: PostRecord, origin: string): string {
   <div class="site-shell">
     <header class="site-header">
       <a href="/" class="site-brand">Agent4All Blog</a>
-      <nav class="site-nav" aria-label="Primary">
-        <a href="/blog">Blog</a>
-        <a href="/admin">CMS</a>
-      </nav>
     </header>
     <main class="article-main">
       <div class="article-layout">
@@ -61,7 +57,6 @@ function renderPost(post: PostRecord, origin: string): string {
           <div class="content">${contentWithIds}</div>
           <footer class="article-footer">
             <a href="/blog">&lt;- All posts</a>
-            <a href="/admin">Open CMS -&gt;</a>
           </footer>
         </article>
       </div>

@@ -44,10 +44,6 @@ function renderBlogIndex(posts: PostRecord[], origin: string, filter: PublishedP
     <div class="site-shell">
       <header class="site-header">
         <a href="/" class="site-brand">Agent4All Blog</a>
-        <nav class="site-nav" aria-label="Primary">
-          <a href="/blog" aria-current="page">Blog</a>
-          <a href="/admin">CMS</a>
-        </nav>
       </header>
       <main id="main-content" class="journal-main">
         <section class="journal-hero" aria-labelledby="journal-title">
