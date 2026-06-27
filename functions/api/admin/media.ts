@@ -57,7 +57,7 @@ export const onRequestGet: PagesFunction<Env, string, AdminData> = async ({ env,
   return jsonOk({ assets });
 };
 
-/* ── DELETE /api/admin/media?id=<id> — Delete ── */
+/* ── DELETE /api/admin/media?id=<id> — Delete with cascade check ── */
 
 export const onRequestDelete: PagesFunction<Env, string, AdminData> = async ({ env, request }) => {
   const url = new URL(request.url);
@@ -75,6 +75,16 @@ export const onRequestDelete: PagesFunction<Env, string, AdminData> = async ({ e
   const asset = await getMediaAsset(env, id);
   if (!asset) {
     return jsonError('not_found', 'Media asset not found.', 404);
+  }
+
+  const refs = await findPostsReferencingMedia(env, asset.key);
+
+  if (refs.length > 0) {
+    return jsonError(
+      'media_in_use',
+      `Cannot delete this media asset. It is referenced by ${refs.length} post(s): ${refs.map((r) => `"${r.title}"`).join(', ')}. Delete those posts first.`,
+      409,
+    );
   }
 
   await deleteMediaAsset(env, id);

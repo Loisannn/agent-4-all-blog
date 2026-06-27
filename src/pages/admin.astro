@@ -544,6 +544,19 @@
 			}
 
 			async function deleteMediaAsset(id) {
+				/* Check for references first */
+				try {
+					const { referencingPosts } = await api(`/api/admin/media?id=${id}`);
+					if (referencingPosts.length > 0) {
+						const postNames = referencingPosts.map((p) => `"${p.title}"（${p.status === 'published' ? '已发布' : '草稿'}）`).join('\n');
+						alert(`无法删除。该媒体被以下 ${referencingPosts.length} 篇文章引用：\n\n${postNames}\n\n请先在 CMS 中删除这些文章，再删除该媒体。`);
+						return;
+					}
+				} catch (error) {
+					showMediaMessage(`检查引用失败：${error.message}`, true);
+					return;
+				}
+
 				const confirmed = confirm('确认要删除该媒体内容吗？');
 				if (!confirmed) return;
 
