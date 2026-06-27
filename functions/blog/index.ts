@@ -39,7 +39,11 @@ function renderBlogIndex(posts: PostRecord[], origin: string, filter: PublishedP
     <a class="skip-link" href="#main-content">Skip to content</a>
     <div class="site-shell">
       <header class="site-header">
-        <a href="/" class="site-brand">Agent4All Blog</a>
+        <span class="site-brand">Agent4All Blog</span>
+        <nav class="site-nav" aria-label="Primary">
+          <a href="/">Home</a>
+          <a href="/blog" aria-current="page">Blogs</a>
+        </nav>
       </header>
       <main id="main-content" class="journal-main">
         <form class="blog-search" action="/blog" method="get" aria-label="Search posts">

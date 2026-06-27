@@ -760,7 +760,7 @@ textarea:focus-visible {
   top: 0;
   z-index: 2;
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: 1fr auto;
   gap: var(--space-2);
   background: var(--color-surface);
   padding: var(--space-3) var(--space-4);
@@ -910,7 +910,7 @@ textarea:focus-visible {
 input[type="file"] {
   display: flex;
   align-items: center;
-  padding: 0 0.5rem;
+  padding: 0.15rem 0.5rem 0 0.5rem;
   line-height: 1;
 }
 

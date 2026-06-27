@@ -46,11 +46,6 @@
 				<aside class="sidebar" aria-label="Posts">
 					<div class="sidebar-tools">
 						<input id="searchInput" type="search" placeholder="搜索文章…" />
-						<select id="statusFilter" aria-label="状态">
-							<option value="">全部</option>
-							<option value="draft">草稿</option>
-							<option value="published">已发布</option>
-						</select>
 						<button id="newPostButton" class="btn-primary" type="button">+ 新建</button>
 					</div>
 					<div id="postList" class="post-list"></div>
@@ -72,7 +67,6 @@
 							</div>
 							<div class="editor-actions">
 								<button id="deleteButton" class="btn-text btn-text-danger" type="button">删除</button>
-								<button id="unpublishButton" class="btn-text" type="button" hidden>取消发布</button>
 								<button id="saveDraftButton" class="btn-text" type="button">存草稿</button>
 								<button id="publishButton" class="btn-primary" type="button">发布</button>
 							</div>
@@ -157,7 +151,6 @@
 				cover: document.querySelector('#coverInput'),
 				authorName: document.querySelector('#authorNameInput'),
 				delete: document.querySelector('#deleteButton'),
-				unpublish: document.querySelector('#unpublishButton'),
 				editorState: document.querySelector('#editorState'),
 				editorTitle: document.querySelector('#editorTitle'),
 				excerpt: document.querySelector('#excerptInput'),
@@ -176,7 +169,6 @@
 				search: document.querySelector('#searchInput'),
 				setupTokenField: document.querySelector('#setupTokenField'),
 				slug: document.querySelector('#slugInput'),
-				statusFilter: document.querySelector('#statusFilter'),
 				title: document.querySelector('#titleInput'),
 				uploadCover: document.querySelector('#uploadCoverButton'),
 				userEmail: document.querySelector('#userEmail'),
@@ -198,12 +190,10 @@
 				els.newPost.addEventListener('click', resetEditor);
 				els.saveDraft.addEventListener('click', () => savePost('draft'));
 				els.publish.addEventListener('click', () => savePost('published'));
-				els.unpublish.addEventListener('click', () => savePost('draft', true));
 				els.delete.addEventListener('click', deleteCurrentPost);
 				els.uploadCover.addEventListener('click', () => uploadImage('cover'));
 				els.insertImage.addEventListener('click', () => uploadImage('insert'));
 				els.search.addEventListener('input', debounce(loadPosts, 250));
-				els.statusFilter.addEventListener('change', loadPosts);
 				els.title.addEventListener('input', () => {
 					els.editorTitle.textContent = els.title.value || '新文章';
 				});
@@ -304,7 +294,6 @@
 			/* ── Posts ── */
 			async function loadPosts() {
 				const params = new URLSearchParams();
-				if (els.statusFilter.value) params.set('status', els.statusFilter.value);
 				if (els.search.value.trim()) params.set('q', els.search.value.trim());
 
 				try {
@@ -364,7 +353,6 @@
 				els.editorTitle.textContent = post.title;
 				els.editorState.textContent = post.status === 'published' ? 'Published' : 'Draft';
 				els.publish.textContent = post.status === 'published' ? '更新发布' : '发布';
-				els.unpublish.hidden = post.status !== 'published';
 				els.delete.disabled = false;
 			}
 
@@ -380,21 +368,16 @@
 				els.editorTitle.textContent = '新文章';
 				els.editorState.textContent = 'Draft';
 				els.publish.textContent = '发布';
-				els.unpublish.hidden = true;
 				els.delete.disabled = true;
 				renderPostList();
 			}
 
-			async function savePost(nextStatus, unpublish = false) {
+			async function savePost(nextStatus) {
 				let status;
-				if (unpublish) {
-					/* Explicit unpublish: force to draft */
-					status = 'draft';
-				} else if (state.current?.status === 'published' && nextStatus === 'published') {
+				if (state.current?.status === 'published' && nextStatus === 'published') {
 					/* Updating a published post: keep it published (republish) */
 					status = 'published';
 				} else {
-					/* Normal save */
 					status = nextStatus;
 				}
 
@@ -419,7 +402,7 @@
 					state.current = post;
 					fillEditor(post);
 					await loadPosts();
-					showMessage(unpublish ? '已取消发布' : '已保存');
+					showMessage('已保存');
 				} catch (error) {
 					showMessage(error.message, true);
 				}

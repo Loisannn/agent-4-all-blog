@@ -29,7 +29,11 @@ function renderPost(post: PostRecord, origin: string): string {
   <a class="skip-link" href="#article-content">Skip to article</a>
   <div class="site-shell">
     <header class="site-header">
-      <a href="/" class="site-brand">Agent4All Blog</a>
+      <span class="site-brand">Agent4All Blog</span>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="/">Home</a>
+        <a href="/blog">Blogs</a>
+      </nav>
     </header>
     <main class="article-main">
       <div class="article-layout">
