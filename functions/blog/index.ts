@@ -11,9 +11,6 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   const dateFrom = url.searchParams.get('from');
   if (dateFrom) filter.dateFrom = dateFrom;
 
-  const dateTo = url.searchParams.get('to');
-  if (dateTo) filter.dateTo = dateTo;
-
   const posts = await listPublishedPosts(env, filter);
   const origin = url.origin;
 
@@ -36,8 +33,7 @@ function renderBlogIndex(posts: PostRecord[], origin: string, filter: PublishedP
 
   const searchValue = escapeAttribute(filter.q || '');
   const dateFromValue = escapeAttribute(filter.dateFrom || '');
-  const dateToValue = escapeAttribute(filter.dateTo || '');
-  const hasFilter = !!(filter.q || filter.dateFrom || filter.dateTo);
+  const hasFilter = !!(filter.q || filter.dateFrom);
 
   return pageShell('Agent4All Blog', origin, `
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -46,13 +42,9 @@ function renderBlogIndex(posts: PostRecord[], origin: string, filter: PublishedP
         <a href="/" class="site-brand">Agent4All Blog</a>
       </header>
       <main id="main-content" class="journal-main">
-        <section class="journal-hero" aria-labelledby="journal-title">
-            <h1 id="journal-title" class="journal-title">Agent4All Blog</h1>
-        </section>
         <form class="blog-search" action="/blog" method="get" aria-label="Search posts">
           <input type="search" name="q" placeholder="搜索文章…" value="${searchValue}" />
           <input type="date" name="from" value="${dateFromValue}" aria-label="From date" />
-          <input type="date" name="to" value="${dateToValue}" aria-label="To date" />
           <button type="submit" class="btn-primary">查找</button>
           ${hasFilter ? `<a href="/blog" class="button">清除</a>` : ''}
         </form>

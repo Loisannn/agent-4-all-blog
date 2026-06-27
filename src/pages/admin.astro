@@ -15,7 +15,7 @@
 		<a class="skip-link" href="#workspace">Skip to CMS workspace</a>
 		<div class="app">
 			<header class="topbar">
-				<a class="topbar-brand" href="/">Agent4All CMS</a>
+				<a class="topbar-brand" href="/blog">Agent4All Blog</a>
 				<div class="topbar-right">
 					<span class="topbar-user" id="userEmail">Checking session</span>
 					<button id="logoutButton" class="btn-text" type="button" hidden>退出</button>
@@ -521,7 +521,7 @@
 				});
 
 				els.mediaContent.querySelectorAll('.media-delete-btn').forEach((btn) => {
-					btn.addEventListener('click', () => deleteMediaAsset(Number(btn.dataset.id), btn.dataset.key));
+					btn.addEventListener('click', () => deleteMediaAsset(Number(btn.dataset.id)));
 				});
 			}
 
@@ -560,13 +560,12 @@
 				}
 			}
 
-			async function deleteMediaAsset(id, key) {
-				const confirmed = confirm(`确认删除媒体文件 "${key}"？此操作不可撤销。`);
+			async function deleteMediaAsset(id) {
+				const confirmed = confirm('确认要删除该媒体内容吗？');
 				if (!confirmed) return;
 
 				try {
 					await api(`/api/admin/media?id=${id}`, { method: 'DELETE' });
-					showMediaMessage('媒体文件已删除');
 					await loadMediaAssets();
 				} catch (error) {
 					showMediaMessage(error.message, true);
