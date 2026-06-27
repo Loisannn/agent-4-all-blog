@@ -10,28 +10,43 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
 
 function renderBlogIndex(posts: PostRecord[], origin: string): string {
   const items = posts.map((post) => `
-    <article class="post">
-      ${post.cover_image_key ? `<img src="/media/${escapeAttribute(post.cover_image_key)}" alt="">` : ''}
+    <article class="journal-entry">
+      <div class="entry-meta">
+        <time datetime="${escapeAttribute(post.published_at || '')}">${formatDate(post.published_at)}</time>
+        <span class="entry-kicker">Product note</span>
+      </div>
       <div>
-        <time>${formatDate(post.published_at)}</time>
         <h2><a href="/blog/${escapeAttribute(post.slug)}">${escapeHtml(post.title)}</a></h2>
         <p>${escapeHtml(post.excerpt)}</p>
       </div>
+      <a class="entry-arrow" href="/blog/${escapeAttribute(post.slug)}" aria-label="Read ${escapeAttribute(post.title)}">-&gt;</a>
     </article>
   `).join('');
 
-  return pageShell('Blog', origin, `
-    <main class="shell">
-      <header class="masthead">
-        <a href="/" class="brand">Agent 4 All</a>
-        <a href="/admin" class="admin-link">CMS</a>
+  return pageShell('Agent4All Blog', origin, `
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <div class="site-shell">
+      <header class="site-header">
+        <a href="/" class="site-brand">Agent4All Blog</a>
+        <nav class="site-nav" aria-label="Primary">
+          <a href="/blog" aria-current="page">Blog</a>
+          <a href="/admin">CMS</a>
+        </nav>
       </header>
-      <section class="intro">
-        <p class="eyebrow">Latest posts</p>
-        <h1>Blog</h1>
-      </section>
-      <section class="list">${items || '<p class="empty">No published posts yet.</p>'}</section>
-    </main>
+      <main id="main-content" class="journal-main">
+        <section class="journal-hero" aria-labelledby="journal-title">
+          <div>
+            <h1 id="journal-title" class="journal-title">Agent4All Blog</h1>
+            <p class="journal-deck">Product notes and engineering stories about building practical, reliable AI agents for real-world impact.</p>
+          </div>
+          <p class="journal-note">Read from top to bottom. Each entry opens into a focused article page with a quiet reading rail and technical prose measure.</p>
+        </section>
+        <section class="journal-frame" aria-label="Latest posts">
+          <div class="margin-rail" aria-hidden="true"><span class="rail-mark"></span></div>
+          <div class="journal-list">${items || '<p class="empty-public">No published posts yet. Publish a draft from the CMS and it will appear here.</p>'}</div>
+        </section>
+      </main>
+    </div>
   `);
 }
 
@@ -49,36 +64,13 @@ function pageShell(title: string, origin: string, body: string): string {
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${escapeHtml(title)} | Agent 4 All</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>${escapeHtml(title)}</title>
   <link rel="canonical" href="${escapeAttribute(origin)}/blog">
-  <style>${blogCss()}</style>
+  <link rel="stylesheet" href="/theme.css">
 </head>
 <body>${body}</body>
 </html>`;
-}
-
-function blogCss(): string {
-  return `
-    :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #1a1f29; background: #f7f8fb; }
-    body { margin: 0; }
-    a { color: inherit; }
-    .shell { width: min(100% - 32px, 960px); margin: 0 auto; padding: 28px 0 72px; }
-    .masthead { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 0 28px; }
-    .brand { font-weight: 800; text-decoration: none; }
-    .admin-link { border: 1px solid #cfd6e4; border-radius: 6px; padding: 8px 12px; text-decoration: none; background: white; }
-    .intro { border-bottom: 1px solid #d8deea; padding-bottom: 24px; }
-    .eyebrow, time { color: #667085; font-size: 0.86rem; letter-spacing: 0; }
-    h1 { font-size: clamp(2rem, 7vw, 4rem); line-height: 1; margin: 8px 0 0; }
-    .list { display: grid; gap: 16px; margin-top: 24px; }
-    .post { display: grid; grid-template-columns: minmax(0, 220px) 1fr; gap: 18px; background: white; border: 1px solid #e1e6ef; border-radius: 8px; padding: 14px; }
-    .post img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 6px; background: #eef2f7; }
-    .post h2 { font-size: 1.45rem; margin: 6px 0; }
-    .post h2 a { text-decoration: none; }
-    .post p { color: #485365; margin: 0; line-height: 1.6; }
-    .empty { color: #667085; }
-    @media (max-width: 680px) { .post { grid-template-columns: 1fr; } }
-  `;
 }
 
 function formatDate(value: string | null): string {

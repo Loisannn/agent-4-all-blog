@@ -7,14 +7,16 @@
 		<meta charset="utf-8" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 		<meta name="generator" content={Astro.generator} />
-		<title>CMS | Agent 4 All</title>
+		<link rel="stylesheet" href="/theme.css" />
+		<title>CMS | Agent4All Blog</title>
 	</head>
 	<body>
+		<a class="skip-link" href="#workspace">Skip to CMS workspace</a>
 		<main class="app">
 			<header class="topbar">
-				<a class="brand" href="/">Agent 4 All CMS</a>
+				<a class="brand" href="/">Agent4All CMS</a>
 				<div class="top-actions">
 					<span id="userEmail">Checking session</span>
 					<button id="logoutButton" type="button" hidden>退出</button>
@@ -26,7 +28,7 @@
 				<form id="authForm" class="auth-form">
 					<div>
 						<p id="authMode">Login</p>
-						<h1 id="authTitle">登录 CMS</h1>
+						<h1 id="authTitle">登录 Agent4All CMS</h1>
 						<p id="authHint">使用管理员邮箱和密码登录后台。</p>
 					</div>
 					<label id="nameField" hidden>
@@ -59,7 +61,7 @@
 							<option value="draft">草稿</option>
 							<option value="published">已发布</option>
 						</select>
-						<button id="newPostButton" type="button">新建</button>
+						<button id="newPostButton" class="primary" type="button">新建</button>
 					</div>
 					<div id="postList" class="post-list"></div>
 				</aside>
@@ -209,7 +211,7 @@
 				els.nameField.hidden = !setupRequired;
 				els.setupTokenField.hidden = !setupRequired;
 				els.authMode.textContent = setupRequired ? 'Setup' : 'Login';
-				els.authTitle.textContent = setupRequired ? '创建第一个管理员' : '登录 CMS';
+				els.authTitle.textContent = setupRequired ? '创建第一个管理员' : '登录 Agent4All CMS';
 				els.authHint.textContent = setupRequired
 					? '当前还没有管理员。创建第一个账号后，初始化入口会自动关闭。'
 					: '使用管理员邮箱和密码登录后台。';
@@ -277,7 +279,7 @@
 			function renderPostList() {
 				els.postList.innerHTML = '';
 				if (!state.posts.length) {
-					els.postList.innerHTML = '<p class="empty">暂无文章</p>';
+					els.postList.innerHTML = '<p class="empty-state">还没有文章。新建一篇草稿开始写作。</p>';
 					return;
 				}
 
@@ -285,6 +287,7 @@
 					const button = document.createElement('button');
 					button.type = 'button';
 					button.className = `post-row ${state.current?.id === post.id ? 'active' : ''}`;
+					button.setAttribute('aria-pressed', state.current?.id === post.id ? 'true' : 'false');
 					button.innerHTML = `
 						<span>${escapeHtml(post.title)}</span>
 						<small>${post.status === 'published' ? '已发布' : '草稿'} · ${new Date(post.updated_at).toLocaleDateString()}</small>
@@ -446,265 +449,3 @@
 		</script>
 	</body>
 </html>
-
-<style>
-	:root {
-		color-scheme: light;
-		font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-		color: #18202f;
-		background: #f6f7fb;
-	}
-
-	body {
-		margin: 0;
-	}
-
-	button,
-	input,
-	select,
-	textarea {
-		font: inherit;
-	}
-
-	button,
-	a {
-		color: inherit;
-	}
-
-	button {
-		border: 1px solid #ccd4e2;
-		border-radius: 6px;
-		background: #fff;
-		padding: 9px 12px;
-		cursor: pointer;
-	}
-
-	button:disabled {
-		cursor: not-allowed;
-		opacity: 0.45;
-	}
-
-	[hidden] {
-		display: none !important;
-	}
-
-	.app {
-		min-height: 100vh;
-		display: grid;
-		grid-template-rows: auto 1fr;
-	}
-
-	.topbar {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 16px;
-		padding: 14px 18px;
-		border-bottom: 1px solid #dbe1ec;
-		background: #fff;
-	}
-
-	.brand,
-	.top-actions a {
-		font-weight: 800;
-		text-decoration: none;
-	}
-
-	.top-actions {
-		display: flex;
-		align-items: center;
-		gap: 14px;
-		color: #4d5a6f;
-	}
-
-	.top-actions button {
-		padding: 7px 10px;
-	}
-
-	.auth-panel {
-		display: grid;
-		place-items: center;
-		padding: 36px 18px 72px;
-	}
-
-	.auth-form {
-		width: min(100%, 420px);
-		display: grid;
-		gap: 16px;
-		background: #fff;
-		border: 1px solid #dbe1ec;
-		border-radius: 8px;
-		padding: 22px;
-	}
-
-	#authMode {
-		margin: 0 0 6px;
-		color: #667085;
-		font-weight: 700;
-	}
-
-	#authHint {
-		margin: 10px 0 0;
-		color: #667085;
-		line-height: 1.55;
-	}
-
-	.workspace {
-		display: grid;
-		grid-template-columns: minmax(260px, 340px) 1fr;
-		min-height: 0;
-	}
-
-	.sidebar {
-		border-right: 1px solid #dbe1ec;
-		background: #fff;
-		padding: 14px;
-		overflow: auto;
-	}
-
-	.sidebar-tools {
-		display: grid;
-		grid-template-columns: 1fr 110px auto;
-		gap: 8px;
-		position: sticky;
-		top: 0;
-		background: #fff;
-		padding-bottom: 12px;
-	}
-
-	input,
-	select,
-	textarea {
-		width: 100%;
-		box-sizing: border-box;
-		border: 1px solid #ccd4e2;
-		border-radius: 6px;
-		background: #fff;
-		padding: 10px 11px;
-	}
-
-	textarea {
-		resize: vertical;
-		line-height: 1.55;
-	}
-
-	.post-list {
-		display: grid;
-		gap: 8px;
-	}
-
-	.post-row {
-		display: grid;
-		gap: 4px;
-		text-align: left;
-		padding: 12px;
-	}
-
-	.post-row span {
-		font-weight: 750;
-	}
-
-	.post-row small,
-	label,
-	#editorState,
-	.empty {
-		color: #667085;
-	}
-
-	.post-row.active {
-		border-color: #18202f;
-		background: #f0f4ff;
-	}
-
-	.editor {
-		padding: 22px;
-		display: grid;
-		gap: 16px;
-		align-content: start;
-		overflow: auto;
-	}
-
-	.editor-head,
-	.editor-actions,
-	.media-row {
-		display: flex;
-		align-items: end;
-		gap: 10px;
-	}
-
-	.editor-head {
-		justify-content: space-between;
-		align-items: center;
-		border-bottom: 1px solid #dbe1ec;
-		padding-bottom: 18px;
-	}
-
-	#editorState {
-		margin: 0 0 6px;
-	}
-
-	h1 {
-		font-size: clamp(1.8rem, 5vw, 3rem);
-		line-height: 1;
-		margin: 0;
-	}
-
-	.field-grid {
-		display: grid;
-		grid-template-columns: 1fr 0.7fr;
-		gap: 14px;
-	}
-
-	label {
-		display: grid;
-		gap: 7px;
-		font-weight: 700;
-	}
-
-	.file-field {
-		min-width: 220px;
-	}
-
-	.primary {
-		background: #18202f;
-		border-color: #18202f;
-		color: #fff;
-	}
-
-	.danger {
-		border-color: #e7b8b8;
-		color: #9f1d1d;
-	}
-
-	.message {
-		min-height: 24px;
-		color: #17663a;
-		font-weight: 700;
-	}
-
-	.message.error {
-		color: #9f1d1d;
-	}
-
-	@media (max-width: 900px) {
-		.workspace,
-		.field-grid {
-			grid-template-columns: 1fr;
-		}
-
-		.sidebar {
-			border-right: 0;
-			border-bottom: 1px solid #dbe1ec;
-		}
-
-		.editor-head,
-		.media-row {
-			align-items: stretch;
-			flex-direction: column;
-		}
-
-		.sidebar-tools {
-			grid-template-columns: 1fr;
-		}
-	}
-</style>
