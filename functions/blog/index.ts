@@ -21,8 +21,8 @@ function renderBlogIndex(posts: PostRecord[], origin: string, filter: PublishedP
   const items = posts.map((post) => `
     <article class="journal-entry">
       <div class="entry-meta">
-        <time datetime="${escapeAttribute(post.published_at || '')}">${formatDate(post.published_at)}</time>
         ${post.cover_image_key ? `<a class="entry-cover" href="/blog/${encodeURIComponent(post.slug)}" aria-hidden="true" tabindex="-1"><img src="/media/${escapeAttribute(post.cover_image_key)}" alt="" loading="lazy" /></a>` : ''}
+        <time datetime="${escapeAttribute(post.published_at || '')}">${formatDate(post.published_at)}</time>
       </div>
       <div>
         <h2><a href="/blog/${encodeURIComponent(post.slug)}">${escapeHtml(post.title)}</a></h2>
