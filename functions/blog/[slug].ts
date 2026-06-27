@@ -3,7 +3,7 @@ import { getPublishedPostBySlug } from '../../src/cms/posts';
 import type { Env, PostRecord } from '../../src/cms/types';
 
 export const onRequestGet: PagesFunction<Env> = async ({ env, params, request }) => {
-  const slug = getParam(params, 'slug');
+  const slug = safeDecodeURIComponent(getParam(params, 'slug'));
   const post = await getPublishedPostBySlug(env, slug);
   if (!post) {
     return new Response('Not found', { status: 404 });
@@ -21,7 +21,7 @@ function renderPost(post: PostRecord, origin: string): string {
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>${escapeHtml(post.title)} | Agent4All Blog</title>
   <meta name="description" content="${escapeAttribute(post.excerpt)}">
-  <link rel="canonical" href="${escapeAttribute(origin)}/blog/${escapeAttribute(post.slug)}">
+  <link rel="canonical" href="${escapeAttribute(origin)}/blog/${encodeURIComponent(post.slug)}">
   <link rel="stylesheet" href="/theme.css">
 </head>
 <body>
@@ -111,4 +111,12 @@ function escapeHtml(value: string): string {
 
 function escapeAttribute(value: string): string {
   return escapeHtml(value);
+}
+
+function safeDecodeURIComponent(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
 }

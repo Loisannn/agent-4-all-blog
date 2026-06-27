@@ -16,10 +16,10 @@ function renderBlogIndex(posts: PostRecord[], origin: string): string {
         <span class="entry-kicker">Product note</span>
       </div>
       <div>
-        <h2><a href="/blog/${escapeAttribute(post.slug)}">${escapeHtml(post.title)}</a></h2>
+        <h2><a href="/blog/${encodeURIComponent(post.slug)}">${escapeHtml(post.title)}</a></h2>
         <p>${escapeHtml(post.excerpt)}</p>
       </div>
-      <a class="entry-arrow" href="/blog/${escapeAttribute(post.slug)}" aria-label="Read ${escapeAttribute(post.title)}">-&gt;</a>
+      <a class="entry-arrow" href="/blog/${encodeURIComponent(post.slug)}" aria-label="Read ${escapeAttribute(post.title)}">-&gt;</a>
     </article>
   `).join('');
 
