@@ -13,7 +13,7 @@ function renderBlogIndex(posts: PostRecord[], origin: string): string {
     <article class="journal-entry">
       <div class="entry-meta">
         <time datetime="${escapeAttribute(post.published_at || '')}">${formatDate(post.published_at)}</time>
-        <span class="entry-kicker">Product note</span>
+        <span class="entry-kicker">${escapeHtml(post.category || 'Product note')}</span>
       </div>
       <div>
         <h2><a href="/blog/${encodeURIComponent(post.slug)}">${escapeHtml(post.title)}</a></h2>

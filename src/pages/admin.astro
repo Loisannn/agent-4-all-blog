@@ -14,22 +14,22 @@
 	</head>
 	<body>
 		<a class="skip-link" href="#workspace">Skip to CMS workspace</a>
-		<main class="app">
+		<div class="app">
 			<header class="topbar">
-				<a class="brand" href="/">Agent4All CMS</a>
-				<div class="top-actions">
-					<span id="userEmail">Checking session</span>
-					<button id="logoutButton" type="button" hidden>退出</button>
-					<a href="/blog">Blog</a>
+				<a class="topbar-brand" href="/">Agent4All CMS</a>
+				<div class="topbar-right">
+					<span class="topbar-user" id="userEmail">Checking session</span>
+					<a class="topbar-link" href="/blog">Blog</a>
+					<button id="logoutButton" class="btn-secondary" type="button" hidden>退出</button>
 				</div>
 			</header>
 
 			<section id="authPanel" class="auth-panel">
 				<form id="authForm" class="auth-form">
 					<div>
-						<p id="authMode">Login</p>
+						<p id="authMode" class="auth-kicker">Login</p>
 						<h1 id="authTitle">登录 Agent4All CMS</h1>
-						<p id="authHint">使用管理员邮箱和密码登录后台。</p>
+						<p id="authHint" class="auth-hint">使用管理员邮箱和密码登录后台。</p>
 					</div>
 					<label id="nameField" hidden>
 						名称
@@ -47,76 +47,87 @@
 						初始化 token
 						<input id="authSetupToken" autocomplete="off" />
 					</label>
-					<button id="authSubmit" class="primary" type="submit">登录</button>
+					<button id="authSubmit" class="btn-primary" type="submit">登录</button>
 					<div id="authMessage" class="message" role="status"></div>
 				</form>
 			</section>
 
-			<section id="workspace" class="workspace" hidden>
+			<div id="workspace" class="workspace" hidden>
 				<aside class="sidebar" aria-label="Posts">
 					<div class="sidebar-tools">
-						<input id="searchInput" type="search" placeholder="搜索文章" />
+						<input id="searchInput" type="search" placeholder="搜索文章…" />
 						<select id="statusFilter" aria-label="状态">
 							<option value="">全部</option>
 							<option value="draft">草稿</option>
 							<option value="published">已发布</option>
 						</select>
-						<button id="newPostButton" class="primary" type="button">新建</button>
+						<button id="newPostButton" class="btn-primary" type="button">+ 新建</button>
 					</div>
 					<div id="postList" class="post-list"></div>
 				</aside>
 
 				<form id="editor" class="editor">
-					<div class="editor-head">
+					<header class="editor-head">
 						<div>
-							<p id="editorState">Draft</p>
+							<p id="editorState" class="editor-state-badge">Draft</p>
 							<h1 id="editorTitle">新文章</h1>
 						</div>
 						<div class="editor-actions">
-							<button id="deleteButton" class="danger" type="button">删除</button>
-							<button id="saveDraftButton" type="button">存草稿</button>
-							<button id="publishButton" class="primary" type="button">发布</button>
+							<button id="deleteButton" class="btn-danger" type="button">删除</button>
+							<button id="saveDraftButton" class="btn-secondary" type="button">存草稿</button>
+							<button id="publishButton" class="btn-primary" type="button">发布</button>
 						</div>
-					</div>
+					</header>
 
-					<div class="field-grid">
+					<div class="editor-body">
 						<label>
 							标题
-							<input id="titleInput" name="title" required />
+							<input id="titleInput" name="title" placeholder="文章标题" required />
 						</label>
+
+						<div class="field-row field-row-3">
+							<label>
+								Slug
+								<input id="slugInput" name="slug" placeholder="自动生成" />
+							</label>
+							<label>
+								分类
+								<input id="categoryInput" name="category" placeholder="例如：AI、技术" />
+							</label>
+							<label>
+								作者
+								<input id="authorNameInput" name="author_name" placeholder="发布者名称" />
+							</label>
+						</div>
+
 						<label>
-							Slug
-							<input id="slugInput" name="slug" />
+							摘要
+							<textarea id="excerptInput" name="excerpt" rows="2" placeholder="简短描述…"></textarea>
+						</label>
+
+						<div class="media-row">
+							<label>
+								封面 key
+								<input id="coverInput" name="cover_image_key" placeholder="media/uploads/cover.webp" />
+							</label>
+							<label class="file-field">
+								图片
+								<input id="mediaInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
+							</label>
+							<button id="uploadCoverButton" class="btn-secondary" type="button">设为封面</button>
+							<button id="insertImageButton" class="btn-secondary" type="button">插入正文</button>
+						</div>
+
+						<label class="content-field">
+							正文 Markdown
+							<textarea id="contentInput" name="content_markdown" rows="20" placeholder="开始写作…" required></textarea>
 						</label>
 					</div>
-
-					<label>
-						摘要
-						<textarea id="excerptInput" name="excerpt" rows="3"></textarea>
-					</label>
-
-					<div class="media-row">
-						<label>
-							封面 key
-							<input id="coverInput" name="cover_image_key" />
-						</label>
-						<label class="file-field">
-							图片
-							<input id="mediaInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
-						</label>
-						<button id="uploadCoverButton" type="button">设为封面</button>
-						<button id="insertImageButton" type="button">插入正文</button>
-					</div>
-
-					<label class="content-field">
-						正文 Markdown
-						<textarea id="contentInput" name="content_markdown" rows="20" required></textarea>
-					</label>
 
 					<div id="message" class="message" role="status"></div>
 				</form>
-			</section>
-		</main>
+			</div>
+		</div>
 
 		<script>
 			const state = {
@@ -140,6 +151,8 @@
 				authTitle: document.querySelector('#authTitle'),
 				content: document.querySelector('#contentInput'),
 				cover: document.querySelector('#coverInput'),
+				category: document.querySelector('#categoryInput'),
+				authorName: document.querySelector('#authorNameInput'),
 				delete: document.querySelector('#deleteButton'),
 				editorState: document.querySelector('#editorState'),
 				editorTitle: document.querySelector('#editorTitle'),
@@ -288,9 +301,14 @@
 					button.type = 'button';
 					button.className = `post-row ${state.current?.id === post.id ? 'active' : ''}`;
 					button.setAttribute('aria-pressed', state.current?.id === post.id ? 'true' : 'false');
+					const statusLabel = post.status === 'published' ? '已发布' : '草稿';
+					const statusClass = post.status === 'published' ? 'published' : '';
 					button.innerHTML = `
-						<span>${escapeHtml(post.title)}</span>
-						<small>${post.status === 'published' ? '已发布' : '草稿'} · ${new Date(post.updated_at).toLocaleDateString()}</small>
+						<span class="post-row-title">${escapeHtml(post.title)}</span>
+						<span class="post-row-meta">
+							<span class="post-status ${statusClass}">${statusLabel}</span>
+							${new Date(post.updated_at).toLocaleDateString()}
+						</span>
 					`;
 					button.addEventListener('click', () => loadPost(post.id));
 					els.postList.append(button);
@@ -314,6 +332,8 @@
 				els.slug.value = post.slug;
 				els.excerpt.value = post.excerpt || '';
 				els.cover.value = post.cover_image_key || '';
+				els.category.value = post.category || '';
+				els.authorName.value = post.author_name || '';
 				els.content.value = post.content_markdown;
 				els.editorTitle.textContent = post.title;
 				els.editorState.textContent = post.status === 'published' ? 'Published' : 'Draft';
@@ -328,6 +348,8 @@
 				els.slug.value = '';
 				els.excerpt.value = '';
 				els.cover.value = '';
+				els.category.value = '';
+				els.authorName.value = '';
 				els.content.value = '';
 				els.editorTitle.textContent = '新文章';
 				els.editorState.textContent = 'Draft';
@@ -343,6 +365,8 @@
 					slug: els.slug.value,
 					excerpt: els.excerpt.value,
 					cover_image_key: els.cover.value,
+					category: els.category.value,
+					author_name: els.authorName.value,
 					content_markdown: els.content.value,
 					status,
 				};

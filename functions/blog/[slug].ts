@@ -48,13 +48,13 @@ function renderPost(post: PostRecord, origin: string): string {
           <header class="article-header">
             <p class="article-meta">
               <time datetime="${escapeAttribute(post.published_at || '')}">${formatDate(post.published_at)}</time>
-              Product note
+              ${escapeHtml(post.category || 'Product note')}
             </p>
             <h1 class="article-title">${escapeHtml(post.title)}</h1>
             <p class="article-excerpt">${escapeHtml(post.excerpt)}</p>
             <div class="article-author">
               <span class="author-mark">A4</span>
-              <span>Agent4All Engineering</span>
+              <span>${escapeHtml(post.author_name || 'Agent4All Engineering')}</span>
             </div>
           </header>
           ${post.cover_image_key ? `<img class="cover" src="/media/${escapeAttribute(post.cover_image_key)}" alt="">` : ''}
