@@ -12,6 +12,8 @@ const posts: PostRecord[] = [
     content_markdown: '## Why we built it',
     content_html: '<h2>Why we built it</h2><p>Agents need durable production primitives.</p>',
     cover_image_key: null,
+    category: '',
+    author_name: 'Test Author',
     status: 'published',
     published_at: '2026-06-21T00:00:00.000Z',
     created_at: '2026-06-20T00:00:00.000Z',

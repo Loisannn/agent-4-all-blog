@@ -75,16 +75,43 @@ export async function listAdminPosts(env: Env, filters: { status?: string; q?: s
   return result.results || [];
 }
 
-export async function listPublishedPosts(env: Env): Promise<PostRecord[]> {
+export interface PublishedPostsFilter {
+  q?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+export async function listPublishedPosts(env: Env, filter?: PublishedPostsFilter): Promise<PostRecord[]> {
+  const where: string[] = [
+    "status = 'published'",
+    'published_at IS NOT NULL',
+    'published_at <= ?',
+  ];
+  const binds: unknown[] = [new Date().toISOString()];
+
+  if (filter?.q?.trim()) {
+    where.push('(title LIKE ? OR excerpt LIKE ?)');
+    const q = `%${filter.q.trim()}%`;
+    binds.push(q, q);
+  }
+
+  if (filter?.dateFrom) {
+    where.push('published_at >= ?');
+    binds.push(filter.dateFrom);
+  }
+
+  if (filter?.dateTo) {
+    where.push('published_at <= ?');
+    binds.push(filter.dateTo);
+  }
+
   const result = await env.DB.prepare(`
     SELECT ${postSelect}
     FROM posts
-    WHERE status = 'published'
-      AND published_at IS NOT NULL
-      AND published_at <= ?
+    WHERE ${where.join(' AND ')}
     ORDER BY published_at DESC
     LIMIT 50
-  `).bind(new Date().toISOString()).all<PostRecord>();
+  `).bind(...binds).all<PostRecord>();
 
   return result.results || [];
 }

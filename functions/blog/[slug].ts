@@ -13,7 +13,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
 };
 
 function renderPost(post: PostRecord, origin: string): string {
-  const headings = extractHeadings(post.content_html);
+  const contentWithIds = addHeadingIds(post.content_html);
+  const headings = extractHeadings(contentWithIds);
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -41,14 +42,13 @@ function renderPost(post: PostRecord, origin: string): string {
           <nav>
             <a class="admin-link" href="/blog">All posts</a>
             <p class="toc-label">On this page</p>
-            ${headings.length ? `<ol class="toc-list">${headings.map((heading) => `<li>${escapeHtml(heading)}</li>`).join('')}</ol>` : '<p class="toc-list">Article</p>'}
+            ${headings.length ? `<ol class="toc-list">${headings.map((h) => `<li><a href="#${escapeAttribute(h.id)}">${escapeHtml(h.text)}</a></li>`).join('')}</ol>` : '<p class="toc-list">Article</p>'}
           </nav>
         </aside>
         <article id="article-content">
           <header class="article-header">
             <p class="article-meta">
               <time datetime="${escapeAttribute(post.published_at || '')}">${formatDate(post.published_at)}</time>
-              ${escapeHtml(post.category || 'Product note')}
             </p>
             <h1 class="article-title">${escapeHtml(post.title)}</h1>
             <p class="article-excerpt">${escapeHtml(post.excerpt)}</p>
@@ -58,7 +58,7 @@ function renderPost(post: PostRecord, origin: string): string {
             </div>
           </header>
           ${post.cover_image_key ? `<img class="cover" src="/media/${escapeAttribute(post.cover_image_key)}" alt="">` : ''}
-          <div class="content">${post.content_html}</div>
+          <div class="content">${contentWithIds}</div>
           <footer class="article-footer">
             <a href="/blog">&lt;- All posts</a>
             <a href="/admin">Open CMS -&gt;</a>
@@ -88,11 +88,34 @@ function formatDate(value: string | null): string {
   return new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(new Date(value));
 }
 
-function extractHeadings(html: string): string[] {
-  return Array.from(html.matchAll(/<h[23][^>]*>(.*?)<\/h[23]>/g))
-    .map((match) => stripHtml(match[1]).trim())
-    .filter(Boolean)
+interface HeadingItem {
+  id: string;
+  text: string;
+}
+
+function extractHeadings(html: string): HeadingItem[] {
+  return Array.from(html.matchAll(/<h([23])\s[^>]*id="([^"]*)"[^>]*>(.*?)<\/h[23]>/g))
+    .map((match) => ({ id: match[2], text: stripHtml(match[3]).trim() }))
+    .filter((h) => h.text)
     .slice(0, 6);
+}
+
+function addHeadingIds(html: string): string {
+  const seen = new Map<string, number>();
+  return html.replace(/<(h[23])([^>]*)>(.*?)<\/\1>/g, (_full: string, tag: string, attrs: string, body: string) => {
+    /* Skip if already has an id */
+    if (/\bid\s*=\s*"/.test(attrs)) return _full;
+    const text = stripHtml(body).trim();
+    if (!text) return _full;
+    const baseId = text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    const count = seen.get(baseId) || 0;
+    seen.set(baseId, count + 1);
+    const id = count === 0 ? baseId : `${baseId}-${count}`;
+    return `<${tag}${attrs} id="${id}">${body}</${tag}>`;
+  });
 }
 
 function stripHtml(value: string): string {

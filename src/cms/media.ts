@@ -115,6 +115,9 @@ export interface MediaRefPost {
 }
 
 export async function findPostsReferencingMedia(env: Env, mediaKey: string): Promise<MediaRefPost[]> {
+  /* Match cover_image_key exactly, and content via /media/ URL path to avoid false positives
+     from the raw key appearing as incidental text in unrelated posts. */
+  const contentPattern = `%/media/${mediaKey}%`;
   const result = await env.DB.prepare(`
     SELECT id, title, slug, status
     FROM posts
@@ -122,7 +125,7 @@ export async function findPostsReferencingMedia(env: Env, mediaKey: string): Pro
        OR content_markdown LIKE ?
        OR content_html LIKE ?
     ORDER BY updated_at DESC
-  `).bind(mediaKey, `%${mediaKey}%`, `%${mediaKey}%`).all<MediaRefPost>();
+  `).bind(mediaKey, contentPattern, contentPattern).all<MediaRefPost>();
 
   return result.results || [];
 }

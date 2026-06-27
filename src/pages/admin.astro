@@ -85,14 +85,10 @@
 								<input id="titleInput" name="title" placeholder="文章标题" required />
 							</label>
 
-							<div class="field-row field-row-3">
+							<div class="field-row field-row-2">
 								<label>
 									Slug
 									<input id="slugInput" name="slug" placeholder="自动生成" />
-								</label>
-								<label>
-									分类
-									<input id="categoryInput" name="category" placeholder="例如：AI、技术" />
 								</label>
 								<label>
 									作者
@@ -159,7 +155,6 @@
 				authSubmit: document.querySelector('#authSubmit'),
 				content: document.querySelector('#contentInput'),
 				cover: document.querySelector('#coverInput'),
-				category: document.querySelector('#categoryInput'),
 				authorName: document.querySelector('#authorNameInput'),
 				delete: document.querySelector('#deleteButton'),
 				editorState: document.querySelector('#editorState'),
@@ -361,7 +356,6 @@
 				els.slug.value = post.slug;
 				els.excerpt.value = post.excerpt || '';
 				els.cover.value = post.cover_image_key || '';
-				els.category.value = post.category || '';
 				els.authorName.value = post.author_name || '';
 				els.content.value = post.content_markdown;
 				els.editorTitle.textContent = post.title;
@@ -377,7 +371,6 @@
 				els.slug.value = '';
 				els.excerpt.value = '';
 				els.cover.value = '';
-				els.category.value = '';
 				els.authorName.value = '';
 				els.content.value = '';
 				els.editorTitle.textContent = '新文章';
@@ -394,7 +387,6 @@
 					slug: els.slug.value,
 					excerpt: els.excerpt.value,
 					cover_image_key: els.cover.value,
-					category: els.category.value,
 					author_name: els.authorName.value,
 					content_markdown: els.content.value,
 					status,
