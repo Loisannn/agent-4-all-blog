@@ -970,7 +970,7 @@ textarea:focus-visible {
   border-bottom: 1px solid var(--color-border);
   background: var(--color-canvas);
   padding: 0 var(--space-5);
-  height: var(--box-height);
+  min-height: calc(var(--box-height) + var(--space-3) * 2);
 }
 
 .editor-head h1 {
