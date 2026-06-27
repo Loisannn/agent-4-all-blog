@@ -26,7 +26,7 @@ function renderBlogIndex(posts: PostRecord[], origin: string, filter: PublishedP
       </div>
       <div>
         <h2><a href="/blog/${encodeURIComponent(post.slug)}">${escapeHtml(post.title)}</a></h2>
-        <p>${escapeHtml(post.excerpt)}</p>
+        ${post.excerpt ? `<p>${escapeHtml(post.excerpt)}</p>` : ''}
       </div>
       <a class="entry-arrow" href="/blog/${encodeURIComponent(post.slug)}" aria-label="Read ${escapeAttribute(post.title)}">-&gt;</a>
     </article>

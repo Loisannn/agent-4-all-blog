@@ -94,17 +94,12 @@ function stripUnsafeSchemes(value: string): string {
 }
 
 export function createExcerpt(markdownSource: string, explicitExcerpt: unknown, maxLength = 180): string {
+  /* Only use explicit excerpt — never auto-generate from body content */
   if (typeof explicitExcerpt === 'string' && explicitExcerpt.trim()) {
     return truncate(explicitExcerpt.trim(), maxLength);
   }
 
-  const text = renderMarkdown(markdownSource)
-    .replace(htmlTagPattern, ' ')
-    .replace(markdownSyntaxPattern, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-  return truncate(text, maxLength);
+  return '';
 }
 
 function truncate(value: string, maxLength: number): string {

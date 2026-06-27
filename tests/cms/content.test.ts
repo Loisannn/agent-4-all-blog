@@ -23,8 +23,8 @@ describe('content helpers', () => {
     expect(html).toContain('alt="Cover"');
   });
 
-  it('derives an excerpt from markdown when one is not supplied', () => {
-    expect(createExcerpt('## Title\n\nThis is **body** copy.', '')).toBe('Title This is body copy.');
+  it('returns empty string when no explicit excerpt is supplied', () => {
+    expect(createExcerpt('## Title\n\nThis is **body** copy.', '')).toBe('');
     expect(createExcerpt('Ignored', ' Custom excerpt ')).toBe('Custom excerpt');
   });
 });

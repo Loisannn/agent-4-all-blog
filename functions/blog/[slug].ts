@@ -53,7 +53,7 @@ function renderPost(post: PostRecord, adjacent: AdjacentPosts, origin: string): 
               <time datetime="${escapeAttribute(post.published_at || '')}">${formatDate(post.published_at)}</time>
             </p>
             <h1 class="article-title">${escapeHtml(post.title)}</h1>
-            <p class="article-excerpt">${escapeHtml(post.excerpt)}</p>
+            ${post.excerpt ? `<p class="article-excerpt">${escapeHtml(post.excerpt)}</p>` : ''}
             <div class="article-author">
               <span class="author-mark">A4</span>
               <span>${escapeHtml(post.author_name || 'Agent4All Engineering')}</span>
