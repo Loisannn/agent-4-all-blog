@@ -1,0 +1,317 @@
+---
+---
+
+<html lang="zh-CN">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" href="/favicon.ico" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+		<meta name="generator" content={Astro.generator} />
+		<link rel="stylesheet" href="/theme.css" />
+		<title>媒体管理 | Agent4All Blog</title>
+	</head>
+	<body>
+		<a class="skip-link" href="#media-workspace">Skip to media library</a>
+		<div class="app">
+			<header class="topbar">
+				<a class="topbar-brand" href="/blog">Agent4All Blog</a>
+				<nav class="cms-nav">
+					<a class="cms-nav-tab" href="/admin">文章编辑</a>
+					<a class="cms-nav-tab active" href="/admin/media">媒体管理</a>
+				</nav>
+				<div class="topbar-right">
+					<span class="topbar-user" id="userEmail">Checking session</span>
+					<button id="logoutButton" class="btn-text" type="button" hidden>退出</button>
+				</div>
+			</header>
+
+			<!-- ── Auth Panel ── -->
+			<section id="authPanel" class="auth-panel">
+				<form id="authForm" class="auth-form">
+					<label>
+						邮箱
+						<input id="authEmail" type="email" autocomplete="email" required placeholder="admin@example.com" />
+					</label>
+					<label>
+						密码
+						<input id="authPassword" type="password" autocomplete="current-password" minlength="8" required placeholder="········" />
+					</label>
+					<label id="setupTokenField" hidden>
+						初始化 token
+						<input id="authSetupToken" autocomplete="off" />
+					</label>
+					<button id="authSubmit" class="btn-primary" type="submit">登录</button>
+					<div id="authMessage" class="message" role="status"></div>
+				</form>
+			</section>
+
+			<div id="media-workspace" class="media-page" hidden>
+				<div class="media-toolbar">
+					<span class="media-toolbar-title">媒体库</span>
+					<span class="media-toolbar-count" id="mediaCount"></span>
+				</div>
+				<div id="mediaContent" class="media-grid"></div>
+				<div id="mediaMessage" class="message" role="status"></div>
+			</div>
+		</div>
+
+		<script>
+			const state = {
+				setupRequired: false,
+				media: [],
+			};
+
+			const els = {
+				authEmail: document.querySelector('#authEmail'),
+				authForm: document.querySelector('#authForm'),
+				authMessage: document.querySelector('#authMessage'),
+				authPanel: document.querySelector('#authPanel'),
+				authPassword: document.querySelector('#authPassword'),
+				authSetupToken: document.querySelector('#authSetupToken'),
+				authSubmit: document.querySelector('#authSubmit'),
+				logout: document.querySelector('#logoutButton'),
+				mediaContent: document.querySelector('#mediaContent'),
+				mediaCount: document.querySelector('#mediaCount'),
+				mediaMessage: document.querySelector('#mediaMessage'),
+				mediaWorkspace: document.querySelector('#media-workspace'),
+				userEmail: document.querySelector('#userEmail'),
+			};
+
+			init();
+
+			function init() {
+				bindEvents();
+				checkAuth();
+			}
+
+			function bindEvents() {
+				els.authForm.addEventListener('submit', submitAuth);
+				els.logout.addEventListener('click', logout);
+			}
+
+			/* ── Auth ── */
+			async function checkAuth() {
+				try {
+					const status = await api('/api/auth/status');
+					state.setupRequired = status.setupRequired;
+					if (status.authenticated) {
+						enterApp(status.user);
+					} else {
+						showAuth(status.setupRequired);
+					}
+				} catch (error) {
+					showAuth(false);
+					showMessage(error.message, true);
+				}
+			}
+
+			function showAuth(setupRequired) {
+				state.setupRequired = setupRequired;
+				els.mediaWorkspace.hidden = true;
+				els.authPanel.hidden = false;
+				els.logout.hidden = true;
+				els.userEmail.textContent = setupRequired ? 'Setup required' : 'Not logged in';
+				els.setupTokenField.hidden = !setupRequired;
+				els.authSubmit.textContent = setupRequired ? '创建管理员' : '登录';
+				els.authPassword.autocomplete = setupRequired ? 'new-password' : 'current-password';
+				els.authEmail.focus();
+			}
+
+			function enterApp(user) {
+				els.authPanel.hidden = true;
+				els.mediaWorkspace.hidden = false;
+				els.logout.hidden = false;
+				els.userEmail.textContent = user?.email || 'Logged in';
+				showAuthMessage('');
+				loadMediaAssets();
+			}
+
+			async function submitAuth(event) {
+				event.preventDefault();
+				const body = {
+					email: els.authEmail.value,
+					password: els.authPassword.value,
+					name: '',
+					setupToken: els.authSetupToken.value,
+				};
+				const path = state.setupRequired ? '/api/auth/setup' : '/api/auth/login';
+
+				try {
+					const { user } = await api(path, {
+						method: 'POST',
+						headers: { 'content-type': 'application/json' },
+						body: JSON.stringify(body),
+					});
+					els.authPassword.value = '';
+					enterApp(user);
+				} catch (error) {
+					showMessage(error.message, true);
+				}
+			}
+
+			async function logout() {
+				try {
+					await api('/api/auth/logout', { method: 'POST' });
+				} finally {
+					state.media = [];
+					showAuth(false);
+				}
+			}
+
+			/* ── Media Management ── */
+			async function loadMediaAssets() {
+				try {
+					const { assets } = await api('/api/admin/media');
+					state.media = assets;
+					renderMediaGrid();
+				} catch (error) {
+					els.mediaContent.innerHTML = `<p class="empty-state">加载媒体库失败：${escapeHtml(error.message)}</p>`;
+				}
+			}
+
+			function renderMediaGrid() {
+				els.mediaCount.textContent = state.media.length ? `(${state.media.length} 个文件)` : '';
+
+				if (!state.media.length) {
+					els.mediaContent.innerHTML = '<p class="empty-state">媒体库为空。上传图片后在此处管理。</p>';
+					return;
+				}
+
+				els.mediaContent.innerHTML = state.media.map((asset) => {
+					const safeKey = escapeHtml(asset.key);
+					return `
+						<article class="media-card">
+							<div class="media-card-preview">
+								${asset.mime_type.startsWith('image/')
+									? `<img src="/media/${escapeHtml(asset.key)}" alt="${safeKey}" loading="lazy" />`
+									: `<span class="media-icon">&#128196;</span>`
+								}
+							</div>
+							<div class="media-card-body">
+								<span class="media-card-filename">${safeKey}</span>
+								<span class="media-card-meta">
+									<span>${formatBytes(asset.size)}</span>
+									<span>${new Date(asset.uploaded_at).toLocaleDateString()}</span>
+								</span>
+								<button class="btn-text media-refs-toggle" data-id="${asset.id}" type="button" style="height:auto;padding:0.25rem 0.5rem;font-size:0.75rem;margin-top:var(--space-1);">
+									查看引用
+								</button>
+								<div id="refs-${asset.id}" class="media-card-refs" hidden></div>
+							</div>
+							<div class="media-card-actions">
+								<button class="btn-text btn-text-danger media-delete-btn" data-id="${asset.id}" data-key="${safeKey}" type="button">
+									删除
+								</button>
+							</div>
+						</article>
+					`;
+				}).join('');
+
+				/* Bind events */
+				els.mediaContent.querySelectorAll('.media-refs-toggle').forEach((btn) => {
+					btn.addEventListener('click', () => toggleMediaRefs(Number(btn.dataset.id)));
+				});
+
+				els.mediaContent.querySelectorAll('.media-delete-btn').forEach((btn) => {
+					btn.addEventListener('click', () => deleteMediaAsset(Number(btn.dataset.id)));
+				});
+			}
+
+			async function toggleMediaRefs(id) {
+				const refDiv = document.querySelector(`#refs-${id}`);
+				if (!refDiv) return;
+
+				if (!refDiv.hidden) {
+					refDiv.hidden = true;
+					return;
+				}
+
+				try {
+					const { referencingPosts } = await api(`/api/admin/media?id=${id}`);
+					if (referencingPosts.length === 0) {
+						refDiv.innerHTML = '<p style="margin:0;color:var(--color-muted);">未被任何文章引用</p>';
+					} else {
+						refDiv.innerHTML = `
+							<details open>
+								<summary>被 ${referencingPosts.length} 篇文章引用</summary>
+								<ul>
+									${referencingPosts.map((p) => `
+										<li>
+											<a href="/blog/${encodeURIComponent(p.slug)}" target="_blank">${escapeHtml(p.title)}</a>
+											<span class="post-ref-status">${p.status === 'published' ? '已发布' : '草稿'}</span>
+										</li>
+									`).join('')}
+								</ul>
+							</details>
+						`;
+					}
+					refDiv.hidden = false;
+				} catch (error) {
+					refDiv.innerHTML = `<p style="margin:0;color:var(--color-danger);">加载失败：${escapeHtml(error.message)}</p>`;
+					refDiv.hidden = false;
+				}
+			}
+
+			async function deleteMediaAsset(id) {
+				try {
+					const { referencingPosts } = await api(`/api/admin/media?id=${id}`);
+					if (referencingPosts.length > 0) {
+						const postNames = referencingPosts.map((p) => `"${p.title}"（${p.status === 'published' ? '已发布' : '草稿'}）`).join('\n');
+						alert(`无法删除。该媒体被以下 ${referencingPosts.length} 篇文章引用：\n\n${postNames}\n\n请先在 CMS 中删除这些文章，再删除该媒体。`);
+						return;
+					}
+				} catch (error) {
+					showMessage(`检查引用失败：${error.message}`, true);
+					return;
+				}
+
+				const confirmed = confirm('确认要删除该媒体内容吗？');
+				if (!confirmed) return;
+
+				try {
+					await api(`/api/admin/media?id=${id}`, { method: 'DELETE' });
+					await loadMediaAssets();
+				} catch (error) {
+					showMessage(error.message, true);
+				}
+			}
+
+			/* ── Utilities ── */
+			async function api(path, options = {}) {
+				const response = await fetch(path, options);
+				const payload = await response.json().catch(() => null);
+				if (!response.ok || !payload?.ok) {
+					throw new Error(payload?.error?.message || `Request failed (${response.status})`);
+				}
+				return payload.data;
+			}
+
+			function showMessage(message, isError = false) {
+				els.mediaMessage.textContent = message;
+				els.mediaMessage.classList.toggle('error', isError);
+			}
+
+			function showAuthMessage(message, isError = false) {
+				els.authMessage.textContent = message;
+				els.authMessage.classList.toggle('error', isError);
+			}
+
+			function escapeHtml(value) {
+				return String(value).replace(/[&<>"']/g, (char) => ({
+					'&': '&amp;',
+					'<': '&lt;',
+					'>': '&gt;',
+					'"': '&quot;',
+					"'": '&#39;',
+				})[char]);
+			}
+
+			function formatBytes(bytes) {
+				if (bytes < 1024) return `${bytes} B`;
+				if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
+				return `${(bytes / 1048576).toFixed(1)} MB`;
+			}
+		</script>
+	</body>
+</html>

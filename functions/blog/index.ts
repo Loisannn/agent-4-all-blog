@@ -23,9 +23,12 @@ function renderBlogIndex(posts: PostRecord[], origin: string, filter: PublishedP
       <div class="entry-meta">
         <time datetime="${escapeAttribute(post.published_at || '')}">${formatDate(post.published_at)}</time>
       </div>
-      <div>
-        <h2><a href="/blog/${encodeURIComponent(post.slug)}">${escapeHtml(post.title)}</a></h2>
-        <p>${escapeHtml(post.excerpt)}</p>
+      <div class="entry-body">
+        ${post.cover_image_key ? `<a class="entry-cover" href="/blog/${encodeURIComponent(post.slug)}" aria-hidden="true" tabindex="-1"><img src="/media/${escapeAttribute(post.cover_image_key)}" alt="" loading="lazy" /></a>` : ''}
+        <div>
+          <h2><a href="/blog/${encodeURIComponent(post.slug)}">${escapeHtml(post.title)}</a></h2>
+          <p>${escapeHtml(post.excerpt)}</p>
+        </div>
       </div>
       <a class="entry-arrow" href="/blog/${encodeURIComponent(post.slug)}" aria-label="Read ${escapeAttribute(post.title)}">-&gt;</a>
     </article>
