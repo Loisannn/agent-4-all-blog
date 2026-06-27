@@ -749,8 +749,7 @@ textarea:focus-visible {
 .topbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
+  gap: var(--space-5);
   height: var(--box-height);
   border-bottom: 1px solid var(--color-border);
   background: var(--color-canvas);
@@ -770,6 +769,7 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   gap: var(--space-4);
+  margin-left: auto;
   font-size: 0.875rem;
   color: var(--color-muted);
 }
