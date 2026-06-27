@@ -1,5 +1,6 @@
 import { getParam } from '../../src/cms/http';
-import { getPublishedPostBySlug } from '../../src/cms/posts';
+import { getAdjacentPosts, getPublishedPostBySlug } from '../../src/cms/posts';
+import type { AdjacentPosts } from '../../src/cms/posts';
 import type { Env, PostRecord } from '../../src/cms/types';
 
 export const onRequestGet: PagesFunction<Env> = async ({ env, params, request }) => {
@@ -9,10 +10,12 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, params, request })
     return new Response('Not found', { status: 404 });
   }
 
-  return htmlResponse(renderPost(post, new URL(request.url).origin));
+  const adjacent = post.published_at ? await getAdjacentPosts(env, post.published_at) : { previous: null, next: null };
+
+  return htmlResponse(renderPost(post, adjacent, new URL(request.url).origin));
 };
 
-function renderPost(post: PostRecord, origin: string): string {
+function renderPost(post: PostRecord, adjacent: AdjacentPosts, origin: string): string {
   const contentWithIds = addHeadingIds(post.content_html);
   const headings = extractHeadings(contentWithIds);
   return `<!doctype html>
@@ -59,7 +62,14 @@ function renderPost(post: PostRecord, origin: string): string {
           ${post.cover_image_key ? `<img class="cover" src="/media/${escapeAttribute(post.cover_image_key)}" alt="">` : ''}
           <div class="content">${contentWithIds}</div>
           <footer class="article-footer">
-            <a href="/blog">&lt;- All posts</a>
+            <div class="post-nav">
+              ${adjacent.previous
+                ? `<a class="post-nav-link" href="/blog/${encodeURIComponent(adjacent.previous.slug)}">&larr; ${escapeHtml(adjacent.previous.title)}</a>`
+                : '<span class="post-nav-link is-disabled">&larr; Previous</span>'}
+              ${adjacent.next
+                ? `<a class="post-nav-link" href="/blog/${encodeURIComponent(adjacent.next.slug)}">${escapeHtml(adjacent.next.title)} &rarr;</a>`
+                : '<span class="post-nav-link is-disabled">Next &rarr;</span>'}
+            </div>
           </footer>
         </article>
       </div>

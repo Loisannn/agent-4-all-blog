@@ -116,6 +116,27 @@ export async function listPublishedPosts(env: Env, filter?: PublishedPostsFilter
   return result.results || [];
 }
 
+export interface AdjacentPosts {
+  previous: Pick<PostRecord, 'slug' | 'title'> | null;
+  next: Pick<PostRecord, 'slug' | 'title'> | null;
+}
+
+export async function getAdjacentPosts(env: Env, publishedAt: string): Promise<AdjacentPosts> {
+  const prev = await env.DB.prepare(`
+    SELECT slug, title FROM posts
+    WHERE status = 'published' AND published_at IS NOT NULL AND published_at <= ? AND published_at > ?
+    ORDER BY published_at ASC LIMIT 1
+  `).bind(new Date().toISOString(), publishedAt).first<Pick<PostRecord, 'slug' | 'title'>>();
+
+  const next = await env.DB.prepare(`
+    SELECT slug, title FROM posts
+    WHERE status = 'published' AND published_at IS NOT NULL AND published_at <= ? AND published_at < ?
+    ORDER BY published_at DESC LIMIT 1
+  `).bind(new Date().toISOString(), publishedAt).first<Pick<PostRecord, 'slug' | 'title'>>();
+
+  return { previous: prev || null, next: next || null };
+}
+
 export async function getPostById(env: Env, id: number): Promise<PostRecord | null> {
   return env.DB.prepare(`SELECT ${postSelect} FROM posts WHERE id = ?`).bind(id).first<PostRecord>();
 }
