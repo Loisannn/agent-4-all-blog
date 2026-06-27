@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS posts (
   content_markdown TEXT NOT NULL,
   content_html TEXT NOT NULL,
   cover_image_key TEXT,
+  category TEXT NOT NULL DEFAULT '',
+  author_name TEXT NOT NULL DEFAULT '',
   status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
   published_at TEXT,
   created_at TEXT NOT NULL,
