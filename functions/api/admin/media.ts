@@ -48,8 +48,13 @@ export const onRequestGet: PagesFunction<Env, string, AdminData> = async ({ env,
       return jsonError('not_found', 'Media asset not found.', 404);
     }
 
-    const refs = await findPostsReferencingMedia(env, asset.key);
-    return jsonOk({ asset, referencingPosts: refs });
+    try {
+      const refs = await findPostsReferencingMedia(env, asset.key);
+      return jsonOk({ asset, referencingPosts: refs });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Reference lookup failed.';
+      return jsonError('lookup_failed', message, 500);
+    }
   }
 
   /* List: GET /api/admin/media */
