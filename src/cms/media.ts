@@ -41,6 +41,18 @@ export async function uploadMedia(env: Env, file: File, userEmail: string): Prom
     throw Object.assign(new Error(validation.message), { code: validation.code, status: 400 });
   }
 
+  /* Dedup: if same filename and size already exists, reuse it */
+  const existing = await env.DB.prepare(`
+    SELECT id, key, filename, mime_type, size, uploaded_at, uploaded_by
+    FROM media_assets
+    WHERE filename = ? AND size = ?
+    LIMIT 1
+  `).bind(file.name, file.size).first<MediaAssetRecord>();
+
+  if (existing) {
+    return existing;
+  }
+
   const key = buildMediaKey(file.name);
   await env.MEDIA_BUCKET.put(key, await file.arrayBuffer(), {
     httpMetadata: {
