@@ -128,16 +128,17 @@ export interface MediaRefPost {
 
 export async function findPostsReferencingMedia(env: Env, mediaKey: string): Promise<MediaRefPost[]> {
   /* Match cover_image_key exactly, and content via /media/ URL path to avoid false positives
-     from the raw key appearing as incidental text in unrelated posts. */
-  const contentPattern = `%/media/${mediaKey}%`;
+     from the raw key appearing as incidental text in unrelated posts.
+     Uses INSTR instead of LIKE to avoid SQLite's LIKE pattern complexity limit. */
+  const contentSearch = `/media/${mediaKey}`;
   const result = await env.DB.prepare(`
     SELECT id, title, slug, status
     FROM posts
     WHERE cover_image_key = ?
-       OR content_markdown LIKE ?
-       OR content_html LIKE ?
+       OR INSTR(content_markdown, ?) > 0
+       OR INSTR(content_html, ?) > 0
     ORDER BY updated_at DESC
-  `).bind(mediaKey, contentPattern, contentPattern).all<MediaRefPost>();
+  `).bind(mediaKey, contentSearch, contentSearch).all<MediaRefPost>();
 
   return result.results || [];
 }
