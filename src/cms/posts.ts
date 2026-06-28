@@ -11,6 +11,8 @@ const postSelect = `
   content_markdown,
   content_html,
   cover_image_key,
+  category,
+  author_name,
   status,
   published_at,
   created_at,
@@ -39,6 +41,8 @@ export function preparePostPayload(input: PostInput, existing?: Partial<Existing
     content_markdown: contentMarkdown,
     content_html: renderMarkdown(contentMarkdown),
     cover_image_key: nullableTrimmedString(input.cover_image_key),
+    category: asTrimmedString(input.category),
+    author_name: asTrimmedString(input.author_name),
     status,
     published_at: status === 'published' ? existing?.published_at || now : null,
   };
@@ -71,18 +75,66 @@ export async function listAdminPosts(env: Env, filters: { status?: string; q?: s
   return result.results || [];
 }
 
-export async function listPublishedPosts(env: Env): Promise<PostRecord[]> {
+export interface PublishedPostsFilter {
+  q?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+export async function listPublishedPosts(env: Env, filter?: PublishedPostsFilter): Promise<PostRecord[]> {
+  const where: string[] = [
+    "status = 'published'",
+    'published_at IS NOT NULL',
+    'published_at <= ?',
+  ];
+  const binds: unknown[] = [new Date().toISOString()];
+
+  if (filter?.q?.trim()) {
+    where.push('(title LIKE ? OR excerpt LIKE ?)');
+    const q = `%${filter.q.trim()}%`;
+    binds.push(q, q);
+  }
+
+  if (filter?.dateFrom) {
+    where.push('published_at >= ?');
+    binds.push(filter.dateFrom);
+  }
+
+  if (filter?.dateTo) {
+    where.push('published_at <= ?');
+    binds.push(filter.dateTo);
+  }
+
   const result = await env.DB.prepare(`
     SELECT ${postSelect}
     FROM posts
-    WHERE status = 'published'
-      AND published_at IS NOT NULL
-      AND published_at <= ?
+    WHERE ${where.join(' AND ')}
     ORDER BY published_at DESC
     LIMIT 50
-  `).bind(new Date().toISOString()).all<PostRecord>();
+  `).bind(...binds).all<PostRecord>();
 
   return result.results || [];
+}
+
+export interface AdjacentPosts {
+  previous: Pick<PostRecord, 'slug' | 'title'> | null;
+  next: Pick<PostRecord, 'slug' | 'title'> | null;
+}
+
+export async function getAdjacentPosts(env: Env, publishedAt: string): Promise<AdjacentPosts> {
+  const prev = await env.DB.prepare(`
+    SELECT slug, title FROM posts
+    WHERE status = 'published' AND published_at IS NOT NULL AND published_at <= ? AND published_at > ?
+    ORDER BY published_at ASC LIMIT 1
+  `).bind(new Date().toISOString(), publishedAt).first<Pick<PostRecord, 'slug' | 'title'>>();
+
+  const next = await env.DB.prepare(`
+    SELECT slug, title FROM posts
+    WHERE status = 'published' AND published_at IS NOT NULL AND published_at <= ? AND published_at < ?
+    ORDER BY published_at DESC LIMIT 1
+  `).bind(new Date().toISOString(), publishedAt).first<Pick<PostRecord, 'slug' | 'title'>>();
+
+  return { previous: prev || null, next: next || null };
 }
 
 export async function getPostById(env: Env, id: number): Promise<PostRecord | null> {
@@ -111,13 +163,15 @@ export async function createPost(env: Env, input: PostInput, userEmail: string):
       content_markdown,
       content_html,
       cover_image_key,
+      category,
+      author_name,
       status,
       published_at,
       created_at,
       updated_at,
       created_by,
       updated_by
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     payload.slug,
     payload.title,
@@ -125,6 +179,8 @@ export async function createPost(env: Env, input: PostInput, userEmail: string):
     payload.content_markdown,
     payload.content_html,
     payload.cover_image_key,
+    payload.category,
+    payload.author_name,
     payload.status,
     payload.published_at,
     now,
@@ -155,6 +211,8 @@ export async function updatePost(env: Env, id: number, input: PostInput, userEma
       excerpt: input.excerpt ?? existing.excerpt,
       content_markdown: input.content_markdown ?? existing.content_markdown,
       cover_image_key: input.cover_image_key ?? existing.cover_image_key,
+      category: input.category ?? existing.category,
+      author_name: input.author_name ?? existing.author_name,
       status: input.status ?? existing.status,
     },
     existing,
@@ -168,6 +226,8 @@ export async function updatePost(env: Env, id: number, input: PostInput, userEma
         content_markdown = ?,
         content_html = ?,
         cover_image_key = ?,
+        category = ?,
+        author_name = ?,
         status = ?,
         published_at = ?,
         updated_at = ?,
@@ -180,6 +240,8 @@ export async function updatePost(env: Env, id: number, input: PostInput, userEma
     payload.content_markdown,
     payload.content_html,
     payload.cover_image_key,
+    payload.category,
+    payload.author_name,
     payload.status,
     payload.published_at,
     new Date().toISOString(),

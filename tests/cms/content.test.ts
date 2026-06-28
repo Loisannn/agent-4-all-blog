@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { createExcerpt, renderMarkdown, slugify } from '../../src/cms/content';
 
 describe('content helpers', () => {
-  it('creates readable unicode slugs', () => {
-    expect(slugify(' 第一篇 AI CMS! ')).toBe('第一篇-ai-cms');
-    expect(slugify('')).toBe('untitled');
+  it('creates ASCII-only url-safe slugs', () => {
+    expect(slugify(' 第一篇 AI CMS! ')).toBe('ai-cms');
+    expect(slugify('')).toBe('post-0');
   });
 
   it('renders markdown and removes unsafe html', () => {
@@ -23,8 +23,8 @@ describe('content helpers', () => {
     expect(html).toContain('alt="Cover"');
   });
 
-  it('derives an excerpt from markdown when one is not supplied', () => {
-    expect(createExcerpt('## Title\n\nThis is **body** copy.', '')).toBe('Title This is body copy.');
+  it('returns empty string when no explicit excerpt is supplied', () => {
+    expect(createExcerpt('## Title\n\nThis is **body** copy.', '')).toBe('');
     expect(createExcerpt('Ignored', ' Custom excerpt ')).toBe('Custom excerpt');
   });
 });

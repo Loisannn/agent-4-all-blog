@@ -24,6 +24,8 @@ export interface PostRecord {
   content_markdown: string;
   content_html: string;
   cover_image_key: string | null;
+  category: string;
+  author_name: string;
   status: PostStatus;
   published_at: string | null;
   created_at: string;
@@ -48,6 +50,8 @@ export interface PostInput {
   excerpt?: unknown;
   content_markdown?: unknown;
   cover_image_key?: unknown;
+  category?: unknown;
+  author_name?: unknown;
   status?: unknown;
 }
 
@@ -58,6 +62,8 @@ export interface PreparedPostPayload {
   content_markdown: string;
   content_html: string;
   cover_image_key: string | null;
+  category: string;
+  author_name: string;
   status: PostStatus;
   published_at: string | null;
 }

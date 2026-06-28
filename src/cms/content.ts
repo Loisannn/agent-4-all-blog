@@ -15,12 +15,24 @@ export function slugify(value: string): string {
     .normalize('NFKC')
     .trim()
     .toLowerCase()
-    .replace(/['’]/g, '')
-    .replace(/[^\p{L}\p{N}]+/gu, '-')
+    .replace(/['']/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .replace(/-{2,}/g, '-');
 
-  return slug || 'untitled';
+  if (!slug) {
+    return `post-${hash36(value)}`;
+  }
+
+  return slug;
+}
+
+function hash36(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash).toString(36).slice(0, 8);
 }
 
 export function renderMarkdown(value: string): string {
@@ -82,17 +94,12 @@ function stripUnsafeSchemes(value: string): string {
 }
 
 export function createExcerpt(markdownSource: string, explicitExcerpt: unknown, maxLength = 180): string {
+  /* Only use explicit excerpt — never auto-generate from body content */
   if (typeof explicitExcerpt === 'string' && explicitExcerpt.trim()) {
     return truncate(explicitExcerpt.trim(), maxLength);
   }
 
-  const text = renderMarkdown(markdownSource)
-    .replace(htmlTagPattern, ' ')
-    .replace(markdownSyntaxPattern, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-  return truncate(text, maxLength);
+  return '';
 }
 
 function truncate(value: string, maxLength: number): string {

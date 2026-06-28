@@ -1,37 +1,64 @@
-import { listPublishedPosts } from '../../src/cms/posts';
+import { listPublishedPosts, type PublishedPostsFilter } from '../../src/cms/posts';
 import type { Env, PostRecord } from '../../src/cms/types';
 
 export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
-  const posts = await listPublishedPosts(env);
-  const origin = new URL(request.url).origin;
+  const url = new URL(request.url);
+  const filter: PublishedPostsFilter = {};
 
-  return htmlResponse(renderBlogIndex(posts, origin));
+  const q = url.searchParams.get('q')?.trim();
+  if (q) filter.q = q;
+
+  const dateFrom = url.searchParams.get('from');
+  if (dateFrom) filter.dateFrom = dateFrom;
+
+  const posts = await listPublishedPosts(env, filter);
+  const origin = url.origin;
+
+  return htmlResponse(renderBlogIndex(posts, origin, filter));
 };
 
-function renderBlogIndex(posts: PostRecord[], origin: string): string {
+function renderBlogIndex(posts: PostRecord[], origin: string, filter: PublishedPostsFilter): string {
   const items = posts.map((post) => `
-    <article class="post">
-      ${post.cover_image_key ? `<img src="/media/${escapeAttribute(post.cover_image_key)}" alt="">` : ''}
-      <div>
-        <time>${formatDate(post.published_at)}</time>
-        <h2><a href="/blog/${escapeAttribute(post.slug)}">${escapeHtml(post.title)}</a></h2>
-        <p>${escapeHtml(post.excerpt)}</p>
+    <article class="journal-entry">
+      <div class="entry-meta">
+        ${post.cover_image_key ? `<a class="entry-cover" href="/blog/${encodeURIComponent(post.slug)}" aria-hidden="true" tabindex="-1"><img src="/media/${escapeAttribute(post.cover_image_key)}" alt="" loading="lazy" /></a>` : ''}
+        <time datetime="${escapeAttribute(post.published_at || '')}">${formatDate(post.published_at)}</time>
       </div>
+      <div>
+        <h2><a href="/blog/${encodeURIComponent(post.slug)}">${escapeHtml(post.title)}</a></h2>
+        ${post.excerpt ? `<p>${escapeHtml(post.excerpt)}</p>` : ''}
+      </div>
+      <a class="entry-arrow" href="/blog/${encodeURIComponent(post.slug)}" aria-label="Read ${escapeAttribute(post.title)}">-&gt;</a>
     </article>
   `).join('');
 
-  return pageShell('Blog', origin, `
-    <main class="shell">
-      <header class="masthead">
-        <a href="/" class="brand">Agent 4 All</a>
-        <a href="/admin" class="admin-link">CMS</a>
+  const searchValue = escapeAttribute(filter.q || '');
+  const dateFromValue = escapeAttribute(filter.dateFrom || '');
+  const hasFilter = !!(filter.q || filter.dateFrom);
+
+  return pageShell('Agent4All Blog', origin, `
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <div class="site-shell">
+      <header class="site-header">
+        <span class="site-brand">Agent4All Blog</span>
+        <nav class="site-nav" aria-label="Primary">
+          <a href="/">Home</a>
+          <a href="/blog" aria-current="page">Blogs</a>
+        </nav>
       </header>
-      <section class="intro">
-        <p class="eyebrow">Latest posts</p>
-        <h1>Blog</h1>
-      </section>
-      <section class="list">${items || '<p class="empty">No published posts yet.</p>'}</section>
-    </main>
+      <main id="main-content" class="journal-main">
+        <form class="blog-search" action="/blog" method="get" aria-label="Search posts">
+          <input type="search" name="q" placeholder="搜索文章…" value="${searchValue}" />
+          <input type="date" name="from" value="${dateFromValue}" aria-label="From date" />
+          <button type="submit" class="btn-primary">查找</button>
+          ${hasFilter ? `<a href="/blog" class="button">清除</a>` : ''}
+        </form>
+        <section class="journal-frame" aria-label="Latest posts">
+          <div class="margin-rail" aria-hidden="true"><span class="rail-mark"></span></div>
+          <div class="journal-list">${items || '<p class="empty-public">No published posts found. Publish a draft from the CMS and it will appear here.</p>'}</div>
+        </section>
+      </main>
+    </div>
   `);
 }
 
@@ -49,36 +76,13 @@ function pageShell(title: string, origin: string, body: string): string {
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${escapeHtml(title)} | Agent 4 All</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>${escapeHtml(title)}</title>
   <link rel="canonical" href="${escapeAttribute(origin)}/blog">
-  <style>${blogCss()}</style>
+  <link rel="stylesheet" href="/theme.css">
 </head>
 <body>${body}</body>
 </html>`;
-}
-
-function blogCss(): string {
-  return `
-    :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #1a1f29; background: #f7f8fb; }
-    body { margin: 0; }
-    a { color: inherit; }
-    .shell { width: min(100% - 32px, 960px); margin: 0 auto; padding: 28px 0 72px; }
-    .masthead { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 0 28px; }
-    .brand { font-weight: 800; text-decoration: none; }
-    .admin-link { border: 1px solid #cfd6e4; border-radius: 6px; padding: 8px 12px; text-decoration: none; background: white; }
-    .intro { border-bottom: 1px solid #d8deea; padding-bottom: 24px; }
-    .eyebrow, time { color: #667085; font-size: 0.86rem; letter-spacing: 0; }
-    h1 { font-size: clamp(2rem, 7vw, 4rem); line-height: 1; margin: 8px 0 0; }
-    .list { display: grid; gap: 16px; margin-top: 24px; }
-    .post { display: grid; grid-template-columns: minmax(0, 220px) 1fr; gap: 18px; background: white; border: 1px solid #e1e6ef; border-radius: 8px; padding: 14px; }
-    .post img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 6px; background: #eef2f7; }
-    .post h2 { font-size: 1.45rem; margin: 6px 0; }
-    .post h2 a { text-decoration: none; }
-    .post p { color: #485365; margin: 0; line-height: 1.6; }
-    .empty { color: #667085; }
-    @media (max-width: 680px) { .post { grid-template-columns: 1fr; } }
-  `;
 }
 
 function formatDate(value: string | null): string {
