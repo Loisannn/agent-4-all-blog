@@ -33,20 +33,11 @@
 			<section id="authPanel" class="auth-page">
 				<div class="agent-panel auth-intro-panel">
 					<span class="agent-mark hero-mark" aria-hidden="true"><img src="/favicon.svg" alt="" /></span>
-					<p class="panel-kicker">Agent Cloud</p>
-					<h1>Multi-turn publishing work, without losing context.</h1>
-					<p class="auth-copy">
-						Manage drafts, media, and publishing state in a focused workspace shaped like Agent Cloud.
-					</p>
-					<div class="feature-callout">
-						<strong>Designed for active operations</strong>
-						<span>Search posts quickly, inspect saved state on demand, and keep every edit grounded in the right workspace.</span>
-					</div>
+					<h1>Agent4All CMS</h1>
 				</div>
 				<form id="authForm" class="agent-panel auth-form">
 					<span class="agent-mark hero-mark" aria-hidden="true"><img src="/favicon.svg" alt="" /></span>
 					<h1 id="authTitle">Sign in</h1>
-					<p id="authCopy" class="auth-copy">Enter your credentials to continue into your profile-isolated blog workspace.</p>
 					<label>
 						邮箱
 						<input id="authEmail" type="email" autocomplete="email" required placeholder="admin@example.com" />
@@ -150,7 +141,6 @@
 				authSetupToken: document.querySelector('#authSetupToken'),
 				authSubmit: document.querySelector('#authSubmit'),
 				authTitle: document.querySelector('#authTitle'),
-				authCopy: document.querySelector('#authCopy'),
 				content: document.querySelector('#contentInput'),
 				cover: document.querySelector('#coverInput'),
 				authorName: document.querySelector('#authorNameInput'),
@@ -223,9 +213,6 @@
 				els.userEmail.textContent = setupRequired ? 'Setup required' : 'Not logged in';
 				els.setupTokenField.hidden = !setupRequired;
 				els.authTitle.textContent = setupRequired ? 'Create administrator' : 'Sign in';
-				els.authCopy.textContent = setupRequired
-					? 'Create the first administrator account to continue into the blog workspace.'
-					: 'Enter your credentials to continue into your profile-isolated blog workspace.';
 				els.authSubmit.textContent = setupRequired ? 'Create administrator' : 'Continue';
 				els.authPassword.autocomplete = setupRequired ? 'new-password' : 'current-password';
 				els.authEmail.focus();
