@@ -15,7 +15,10 @@
 		<a class="skip-link" href="#media-workspace">Skip to media library</a>
 		<div class="app">
 			<header class="topbar">
-				<a class="topbar-brand" href="/blog">Agent4All Blog</a>
+				<a class="topbar-brand" href="/blog">
+					<span class="agent-mark site-mark" aria-hidden="true"><img src="/favicon.svg" alt="" /></span>
+					<span>Agent4All Blog</span>
+				</a>
 				<nav class="cms-nav">
 					<a class="cms-nav-tab" href="/admin">文章编辑</a>
 					<a class="cms-nav-tab active" href="/admin/media">媒体管理</a>
@@ -27,8 +30,23 @@
 			</header>
 
 			<!-- ── Auth Panel ── -->
-			<section id="authPanel" class="auth-panel">
-				<form id="authForm" class="auth-form">
+			<section id="authPanel" class="auth-page">
+				<div class="agent-panel auth-intro-panel">
+					<span class="agent-mark hero-mark" aria-hidden="true"><img src="/favicon.svg" alt="" /></span>
+					<p class="panel-kicker">Agent Cloud</p>
+					<h1>Operational media, kept in context.</h1>
+					<p class="auth-copy">
+						Inspect uploaded assets, references, and deletion safety inside the same focused workspace.
+					</p>
+					<div class="feature-callout">
+						<strong>Designed for active operations</strong>
+						<span>Review media quickly, inspect references on demand, and keep destructive actions explicit.</span>
+					</div>
+				</div>
+				<form id="authForm" class="agent-panel auth-form">
+					<span class="agent-mark hero-mark" aria-hidden="true"><img src="/favicon.svg" alt="" /></span>
+					<h1 id="authTitle">Sign in</h1>
+					<p id="authCopy" class="auth-copy">Enter your credentials to continue into your profile-isolated media workspace.</p>
 					<label>
 						邮箱
 						<input id="authEmail" type="email" autocomplete="email" required placeholder="admin@example.com" />
@@ -41,18 +59,20 @@
 						初始化 token
 						<input id="authSetupToken" autocomplete="off" />
 					</label>
-					<button id="authSubmit" class="btn-primary" type="submit">登录</button>
+					<button id="authSubmit" class="btn-primary" type="submit">Continue</button>
 					<div id="authMessage" class="message" role="status"></div>
 				</form>
 			</section>
 
-			<div id="media-workspace" class="media-page" hidden>
-				<div class="media-toolbar">
-					<span class="media-toolbar-title">媒体库</span>
-					<span class="media-toolbar-count" id="mediaCount"></span>
+			<div id="media-workspace" class="media-page media-workspace" hidden>
+				<div class="workspace-panel media-library-panel">
+					<div class="media-toolbar">
+						<span class="media-toolbar-title">媒体库</span>
+						<span class="media-toolbar-count" id="mediaCount"></span>
+					</div>
+					<div id="mediaContent" class="media-grid"></div>
+					<div id="mediaMessage" class="message" role="status"></div>
 				</div>
-				<div id="mediaContent" class="media-grid"></div>
-				<div id="mediaMessage" class="message" role="status"></div>
 			</div>
 		</div>
 
@@ -70,6 +90,8 @@
 				authPassword: document.querySelector('#authPassword'),
 				authSetupToken: document.querySelector('#authSetupToken'),
 				authSubmit: document.querySelector('#authSubmit'),
+				authTitle: document.querySelector('#authTitle'),
+				authCopy: document.querySelector('#authCopy'),
 				logout: document.querySelector('#logoutButton'),
 				mediaContent: document.querySelector('#mediaContent'),
 				mediaCount: document.querySelector('#mediaCount'),
@@ -113,7 +135,11 @@
 				els.logout.hidden = true;
 				els.userEmail.textContent = setupRequired ? 'Setup required' : 'Not logged in';
 				els.setupTokenField.hidden = !setupRequired;
-				els.authSubmit.textContent = setupRequired ? '创建管理员' : '登录';
+				els.authTitle.textContent = setupRequired ? 'Create administrator' : 'Sign in';
+				els.authCopy.textContent = setupRequired
+					? 'Create the first administrator account to continue into the media workspace.'
+					: 'Enter your credentials to continue into your profile-isolated media workspace.';
+				els.authSubmit.textContent = setupRequired ? 'Create administrator' : 'Continue';
 				els.authPassword.autocomplete = setupRequired ? 'new-password' : 'current-password';
 				els.authEmail.focus();
 			}
@@ -193,7 +219,7 @@
 									<span>${formatBytes(asset.size)}</span>
 									<span>${new Date(asset.uploaded_at).toLocaleDateString()}</span>
 								</span>
-								<button class="btn-text media-refs-toggle" data-id="${asset.id}" type="button" style="height:auto;padding:0.25rem 0.5rem;font-size:0.75rem;margin-top:var(--space-1);">
+								<button class="btn-text media-refs-toggle" data-id="${asset.id}" type="button">
 									查看引用
 								</button>
 								<div id="refs-${asset.id}" class="media-card-refs" hidden></div>

@@ -24,7 +24,7 @@ const posts: PostRecord[] = [
 ];
 
 describe('public blog rendering', () => {
-  it('renders the blog index as a linear Agent4All Blog journal', async () => {
+  it('renders the blog index with the Agent Cloud workspace shell', async () => {
     const response = await renderBlogIndex({
       env: envWithPosts(posts),
       request: new Request('https://example.com/blog'),
@@ -33,12 +33,16 @@ describe('public blog rendering', () => {
     const html = await response.text();
 
     expect(html).toContain('Agent4All Blog');
-    expect(html).toContain('class="journal-list"');
+    expect(html).toContain('class="agent-page blog-page"');
+    expect(html).toContain('class="workspace-panel blog-index-panel"');
+    expect(html).toContain('class="agent-list"');
+    expect(html).toContain('class="agent-list-item"');
+    expect(html).toContain('class="agent-open-link"');
     expect(html).toContain('href="/blog/agent-os-runtime"');
     expect(html).toContain('The Agent OS: a runtime for reliable, observable agents');
   });
 
-  it('renders post detail with the Agent4All Blog shell and reading rail', async () => {
+  it('renders post detail with the Agent Cloud article shell and toc panel', async () => {
     const response = await renderPost({
       env: envWithPosts(posts),
       params: { slug: 'agent-os-runtime' },
@@ -48,7 +52,10 @@ describe('public blog rendering', () => {
     const html = await response.text();
 
     expect(html).toContain('Agent4All Blog');
-    expect(html).toContain('class="reading-rail"');
+    expect(html).toContain('class="agent-page article-page"');
+    expect(html).toContain('class="article-shell"');
+    expect(html).toContain('class="article-toc-panel"');
+    expect(html).toContain('class="agent-mark author-mark"');
     expect(html).toContain('Why we built it');
     expect(html).toContain('Agents need durable production primitives.');
   });

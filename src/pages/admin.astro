@@ -15,7 +15,10 @@
 		<a class="skip-link" href="#workspace">Skip to CMS workspace</a>
 		<div class="app">
 			<header class="topbar">
-				<a class="topbar-brand" href="/blog">Agent4All Blog</a>
+				<a class="topbar-brand" href="/blog">
+					<span class="agent-mark site-mark" aria-hidden="true"><img src="/favicon.svg" alt="" /></span>
+					<span>Agent4All Blog</span>
+				</a>
 				<nav class="cms-nav">
 					<a class="cms-nav-tab active" href="/admin">文章编辑</a>
 					<a class="cms-nav-tab" href="/admin/media">媒体管理</a>
@@ -27,8 +30,23 @@
 			</header>
 
 			<!-- ── Auth Panel ── -->
-			<section id="authPanel" class="auth-panel">
-				<form id="authForm" class="auth-form">
+			<section id="authPanel" class="auth-page">
+				<div class="agent-panel auth-intro-panel">
+					<span class="agent-mark hero-mark" aria-hidden="true"><img src="/favicon.svg" alt="" /></span>
+					<p class="panel-kicker">Agent Cloud</p>
+					<h1>Multi-turn publishing work, without losing context.</h1>
+					<p class="auth-copy">
+						Manage drafts, media, and publishing state in a focused workspace shaped like Agent Cloud.
+					</p>
+					<div class="feature-callout">
+						<strong>Designed for active operations</strong>
+						<span>Search posts quickly, inspect saved state on demand, and keep every edit grounded in the right workspace.</span>
+					</div>
+				</div>
+				<form id="authForm" class="agent-panel auth-form">
+					<span class="agent-mark hero-mark" aria-hidden="true"><img src="/favicon.svg" alt="" /></span>
+					<h1 id="authTitle">Sign in</h1>
+					<p id="authCopy" class="auth-copy">Enter your credentials to continue into your profile-isolated blog workspace.</p>
 					<label>
 						邮箱
 						<input id="authEmail" type="email" autocomplete="email" required placeholder="admin@example.com" />
@@ -41,13 +59,13 @@
 						初始化 token
 						<input id="authSetupToken" autocomplete="off" />
 					</label>
-					<button id="authSubmit" class="btn-primary" type="submit">登录</button>
+					<button id="authSubmit" class="btn-primary" type="submit">Continue</button>
 					<div id="authMessage" class="message" role="status"></div>
 				</form>
 			</section>
 
-			<div id="workspace" class="workspace" hidden>
-				<aside class="sidebar" aria-label="Posts">
+			<div id="workspace" class="workspace admin-workspace" hidden>
+				<aside class="sidebar posts-sidebar" aria-label="Posts">
 					<div class="sidebar-tools">
 						<input id="searchInput" type="search" placeholder="搜索文章…" />
 						<button id="newPostButton" class="btn-primary" type="button">+ 新建</button>
@@ -56,7 +74,7 @@
 				</aside>
 
 				<!-- ── Post Editor ── -->
-				<form id="editor" class="editor">
+				<form id="editor" class="editor editor-panel">
 					<header class="editor-head">
 						<div>
 							<p id="editorState" class="editor-state-badge">Draft</p>
@@ -131,6 +149,8 @@
 				authPassword: document.querySelector('#authPassword'),
 				authSetupToken: document.querySelector('#authSetupToken'),
 				authSubmit: document.querySelector('#authSubmit'),
+				authTitle: document.querySelector('#authTitle'),
+				authCopy: document.querySelector('#authCopy'),
 				content: document.querySelector('#contentInput'),
 				cover: document.querySelector('#coverInput'),
 				authorName: document.querySelector('#authorNameInput'),
@@ -202,7 +222,11 @@
 				els.logout.hidden = true;
 				els.userEmail.textContent = setupRequired ? 'Setup required' : 'Not logged in';
 				els.setupTokenField.hidden = !setupRequired;
-				els.authSubmit.textContent = setupRequired ? '创建管理员' : '登录';
+				els.authTitle.textContent = setupRequired ? 'Create administrator' : 'Sign in';
+				els.authCopy.textContent = setupRequired
+					? 'Create the first administrator account to continue into the blog workspace.'
+					: 'Enter your credentials to continue into your profile-isolated blog workspace.';
+				els.authSubmit.textContent = setupRequired ? 'Create administrator' : 'Continue';
 				els.authPassword.autocomplete = setupRequired ? 'new-password' : 'current-password';
 				els.authEmail.focus();
 			}

@@ -19,16 +19,16 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
 
 function renderBlogIndex(posts: PostRecord[], origin: string, filter: PublishedPostsFilter): string {
   const items = posts.map((post) => `
-    <article class="journal-entry">
-      <div class="entry-meta">
-        ${post.cover_image_key ? `<a class="entry-cover" href="/blog/${encodeURIComponent(post.slug)}" aria-hidden="true" tabindex="-1"><img src="/media/${escapeAttribute(post.cover_image_key)}" alt="" loading="lazy" /></a>` : ''}
-        <time datetime="${escapeAttribute(post.published_at || '')}">${formatDate(post.published_at)}</time>
-      </div>
-      <div>
+    <article class="agent-list-item">
+      ${post.cover_image_key ? `<a class="agent-list-cover" href="/blog/${encodeURIComponent(post.slug)}" aria-hidden="true" tabindex="-1"><img src="/media/${escapeAttribute(post.cover_image_key)}" alt="" loading="lazy" /></a>` : ''}
+      <div class="agent-list-content">
+        <p class="agent-list-meta">
+          <time datetime="${escapeAttribute(post.published_at || '')}">${formatDate(post.published_at)}</time>
+        </p>
         <h2><a href="/blog/${encodeURIComponent(post.slug)}">${escapeHtml(post.title)}</a></h2>
-        ${post.excerpt ? `<p>${escapeHtml(post.excerpt)}</p>` : ''}
+        ${post.excerpt ? `<p class="agent-list-excerpt">${escapeHtml(post.excerpt)}</p>` : ''}
       </div>
-      <a class="entry-arrow" href="/blog/${encodeURIComponent(post.slug)}" aria-label="Read ${escapeAttribute(post.title)}">-&gt;</a>
+      <a class="agent-open-link" href="/blog/${encodeURIComponent(post.slug)}" aria-label="Read ${escapeAttribute(post.title)}">Open</a>
     </article>
   `).join('');
 
@@ -38,24 +38,33 @@ function renderBlogIndex(posts: PostRecord[], origin: string, filter: PublishedP
 
   return pageShell('Agent4All Blog', origin, `
     <a class="skip-link" href="#main-content">Skip to content</a>
-    <div class="site-shell">
-      <header class="site-header">
-        <span class="site-brand">Agent4All Blog</span>
+    <div class="agent-page blog-page">
+      <header class="site-header agent-topbar">
+        <a class="site-brand" href="/">
+          <span class="agent-mark site-mark" aria-hidden="true"><img src="/favicon.svg" alt="" /></span>
+          <span>Agent4All Blog</span>
+        </a>
         <nav class="site-nav" aria-label="Primary">
           <a href="/">Home</a>
           <a href="/blog" aria-current="page">Blogs</a>
         </nav>
       </header>
-      <main id="main-content" class="journal-main">
-        <form class="blog-search" action="/blog" method="get" aria-label="Search posts">
-          <input type="search" name="q" placeholder="搜索文章…" value="${searchValue}" />
-          <input type="date" name="from" value="${dateFromValue}" aria-label="From date" />
-          <button type="submit" class="btn-primary">查找</button>
-          ${hasFilter ? `<a href="/blog" class="button">清除</a>` : ''}
-        </form>
-        <section class="journal-frame" aria-label="Latest posts">
-          <div class="margin-rail" aria-hidden="true"><span class="rail-mark"></span></div>
-          <div class="journal-list">${items || '<p class="empty-public">No published posts found. Publish a draft from the CMS and it will appear here.</p>'}</div>
+      <main id="main-content" class="agent-frame blog-frame">
+        <section class="workspace-panel blog-index-panel" aria-label="Latest posts">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-kicker">Agent Cloud</p>
+              <h1>Blogs</h1>
+            </div>
+            <a href="/admin" class="button">CMS</a>
+          </div>
+          <form class="blog-search" action="/blog" method="get" aria-label="Search posts">
+            <input type="search" name="q" placeholder="Search posts" value="${searchValue}" />
+            <input type="date" name="from" value="${dateFromValue}" aria-label="From date" />
+            <button type="submit" class="btn-primary">Search</button>
+            ${hasFilter ? `<a href="/blog" class="button">Clear</a>` : ''}
+          </form>
+          <div class="agent-list">${items || '<p class="empty-public">No published posts found. Publish a draft from the CMS and it will appear here.</p>'}</div>
         </section>
       </main>
     </div>

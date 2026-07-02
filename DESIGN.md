@@ -1,101 +1,85 @@
 ---
 name: Agent4All Blog
-description: A linear product-blog reading system with a precise CMS workspace.
+description: An Agent Cloud-styled blog and CMS workspace.
 colors:
-  bg: oklch(0.992 0.002 205)
-  canvas: oklch(1.000 0.000 0)
-  surface: oklch(0.972 0.004 205)
-  surface-strong: oklch(0.935 0.007 205)
-  ink: oklch(0.145 0.025 235)
-  ink-soft: oklch(0.320 0.025 235)
-  muted: oklch(0.420 0.022 235)
-  border: oklch(0.860 0.012 225)
-  border-strong: oklch(0.720 0.026 220)
-  primary: oklch(0.335 0.075 195)
-  primary-hover: oklch(0.270 0.075 195)
-  primary-soft: oklch(0.940 0.028 195)
-  accent: oklch(0.580 0.180 31)
-  accent-soft: oklch(0.965 0.032 31)
-  success: oklch(0.430 0.130 157)
-  success-soft: oklch(0.955 0.032 157)
-  danger: oklch(0.480 0.180 25)
-  danger-soft: oklch(0.955 0.026 25)
-  code-bg: oklch(0.180 0.023 235)
-  code-ink: oklch(0.965 0.004 235)
+  app-canvas: "#f7f7f4"
+  background: "#ffffff"
+  foreground: "#171717"
+  secondary: "#efeee9"
+  muted: "#f4f4f2"
+  muted-foreground: "#5f6068"
+  accent: "#f1f5f9"
+  border: "#deded8"
+  input: "#e7e5e4"
+  ring: "#37598f"
+  destructive: "#dc2626"
+  selection: "#2563eb2e"
 typography:
-  editorial:
-    fontFamily: "Iowan Old Style, Palatino Linotype, Palatino, Georgia, ui-serif, serif"
-    usage: "Public page wordmark, blog title, article title, post titles, article headings"
   ui:
-    fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
-    usage: "CMS, nav, forms, body, metadata"
+    fontFamily: "Satoshi, Avenir Next, Segoe UI, -apple-system, BlinkMacSystemFont, sans-serif"
+    usage: "All public pages, CMS surfaces, headings, labels, controls, and body text"
   code:
-    fontFamily: "SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace"
+    fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace"
     usage: "Markdown editor, inline code, fenced code blocks"
 rounded:
-  sm: 4px
-  md: 6px
-  lg: 8px
-  pill: 999px
-spacing:
-  xs: 4px
-  sm: 8px
-  md: 12px
-  lg: 16px
+  sm: 10px
+  md: 16px
+  lg: 20px
   xl: 24px
-  2xl: 32px
-  3xl: 48px
-  4xl: 64px
+  pill: 999px
 ---
 
 # Design System: Agent4All Blog
 
 ## North Star
 
-**Linear Journal.** The public surface reads like a product blog for builders: a strong editorial title, a top-to-bottom sequence of posts, and focused article pages with a quiet reading rail. The CMS remains a dense product workspace for drafting and publishing.
+**Agent Cloud Surface.** The public blog and CMS now share the visual language of the Agent4All Agent Cloud web app: warm off-white canvas, white rounded panels, near-black actions, muted gray copy, restrained borders, and soft product shadows.
 
-The system is shared, but the surfaces have different jobs:
+The site should feel like a sibling route inside the Agent Cloud product rather than a separate editorial publication.
 
-- Reader pages use editorial serif headings, generous vertical rhythm, and a mallard-teal identity.
-- Admin pages use compact sans UI, predictable controls, and the same mallard-teal only for primary actions, selection, and focus.
-- Vermilion appears rarely for warnings, destructive states, or category emphasis. It never decorates.
+## Source Of Truth
+
+The target URL publicly exposes the Agent Cloud unauthenticated login page and its CSS tokens. Authenticated Agent Cloud workspace screens are not publicly available from the provided URL, so the CMS workspace adapts the visible login-page system plus the extracted product UI tokens.
 
 ## Color Rules
 
-- Backgrounds stay cold white/graphite, not cream, sand, or warm paper.
-- Mallard teal owns the reader identity and product selection states.
-- Vermilion is a rare accent and semantic danger/warning neighbor.
-- Every text color must meet WCAG AA contrast.
-- Do not use gradient text, purple-blue gradients, glassmorphism, decorative orbs, or card side stripes.
+- The page canvas is `#f7f7f4` with subtle blue/slate radial glow.
+- Primary text and primary actions use near-black `#171717`.
+- Primary buttons are black with white text.
+- Surfaces are white; secondary sidebars and panels use `#efeee9` or `#f4f4f2`.
+- Blue is limited to focus, selection, and ambient glow.
+- Destructive actions use `#dc2626`.
+- Avoid teal, editorial serif color identity, gradient text, decorative stripes, and glassmorphism.
 
 ## Typography
 
-- Public titles and article headings use the editorial serif stack.
-- CMS, navigation, forms, metadata, and body copy use the UI sans stack.
-- Product UI type is fixed and compact. Reader headlines can use bounded `clamp()` sizing.
-- Body measure stays around 65-75ch for long-form reading.
-- Letter spacing on display type must not go tighter than `-0.04em`.
+- Use one product sans stack everywhere.
+- Public article text remains readable at a slightly larger body size, but it is still sans.
+- Headings are compact and bold, with letter spacing no tighter than `-0.04em`.
+- Product UI labels and metadata stay between `0.75rem` and `0.875rem`.
+- Long-form content keeps a 65-75ch measure.
 
 ## Layout
 
-- Public browsing is linear downward reading, not a dashboard grid.
-- Blog entries are rows in a chronological journal: date/meta, title/excerpt, action.
-- Article pages use a reading rail on desktop and collapse into a single column on mobile.
-- Admin uses a two-pane product layout: post list/sidebar plus editor, collapsing structurally on smaller screens.
-- Cards are reserved for real bounded tools and empty states. No nested cards.
+- Home uses the target two-panel login-page composition on desktop and a single direct panel on mobile.
+- Blog index uses a rounded workspace panel with search controls and list rows.
+- Article pages use a rounded document panel and a muted table-of-contents side panel when headings exist.
+- CMS auth uses the target two-panel login layout.
+- CMS editor uses a sidebar plus main editor panel.
+- CMS media uses a rounded library panel and repeated asset cards.
 
 ## Components
 
-- Buttons: 4px radius, full 44px touch target, teal primary, border default, vermilion danger.
-- Inputs: white canvas, strong border, visible focus ring, readable placeholders.
-- Post rows: selected state uses a soft teal surface and full border, not a side stripe.
-- Empty states: explain what is empty and give the next action.
-- Messages: success and error use semantic color plus text, never color alone.
+- Agent marks are black rounded squares with white/inverted mark content.
+- Inputs and buttons use 14-16px radius.
+- Panels use 16-24px radius and thin borders.
+- Buttons, inputs, nav tabs, post rows, media cards, messages, and empty states share one component vocabulary across public and CMS routes.
+- Active rows use a full outline and subtle blue selection background, never a side stripe.
 
 ## Motion
 
-Motion is limited to state feedback: hover, focus, pressed, and responsive transitions. Transitions run around 160ms with an ease-out curve. `prefers-reduced-motion` disables motion.
+Motion is limited to hover, focus, and active feedback around 150-200ms. Page-load choreography is not part of the system. `prefers-reduced-motion` disables transitions.
 
 ## Implementation
 
-The shared production stylesheet lives at `public/theme.css`. Static Astro pages and Cloudflare Pages Functions link to it directly, so design tokens stay aligned across `/`, `/blog`, `/blog/:slug`, and `/admin`.
+The shared production stylesheet is `public/theme.css`. Static Astro pages and Cloudflare Pages Functions all link to it directly so `/`, `/blog`, `/blog/:slug`, `/admin`, and `/admin/media` remain visually aligned.

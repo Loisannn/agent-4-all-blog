@@ -12,19 +12,32 @@
     <title>Agent4All Blog</title>
   </head>
   <body>
-    <div class="site-shell">
-      <header class="site-header">
-        <span class="site-brand">Agent4All Blog</span>
-        <nav class="site-nav" aria-label="Primary">
-          <a href="/" aria-current="page">Home</a>
-          <a href="/blog">Blogs</a>
-        </nav>
-      </header>
-      <main class="home-main">
-        <section class="home-hero" aria-labelledby="home-title">
-          <h1 id="home-title" class="home-title">Agent4All Blog</h1>
-          <hr class="home-divider" />
-          <a class="home-link" href="/blog">&gt; Check Blogs</a>
+    <div class="agent-page home-page">
+      <div class="agent-controls" aria-hidden="true">
+        <span class="agent-icon-button">☼</span>
+        <span class="agent-icon-button">文</span>
+      </div>
+      <main class="agent-frame home-frame">
+        <section class="agent-panel home-intro-panel" aria-labelledby="home-title">
+          <span class="agent-mark hero-mark" aria-hidden="true"><img src="/favicon.svg" alt="" /></span>
+          <p class="panel-kicker">Agent Cloud</p>
+          <h1 id="home-title">Multi-turn agent notes, without losing context.</h1>
+          <p class="home-copy">
+            Agent4All Blog collects product notes, engineering updates, and operational writing in the same focused surface as the agent workspace.
+          </p>
+          <div class="feature-callout">
+            <strong>Designed for active operators</strong>
+            <span>Read current posts quickly, inspect updates on demand, and keep the publishing workflow isolated.</span>
+          </div>
+        </section>
+        <section class="agent-panel home-action-panel" aria-label="Blog navigation">
+          <span class="agent-mark hero-mark" aria-hidden="true"><img src="/favicon.svg" alt="" /></span>
+          <h2>Agent4All Blog</h2>
+          <p>Open the latest posts or continue into the CMS workspace.</p>
+          <div class="home-actions">
+            <a class="btn-primary" href="/blog">Open blogs</a>
+            <a class="button" href="/admin">CMS workspace</a>
+          </div>
         </section>
       </main>
     </div>

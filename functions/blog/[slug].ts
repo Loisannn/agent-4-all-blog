@@ -30,24 +30,26 @@ function renderPost(post: PostRecord, adjacent: AdjacentPosts, origin: string): 
 </head>
 <body>
   <a class="skip-link" href="#article-content">Skip to article</a>
-  <div class="site-shell">
-    <header class="site-header">
-      <span class="site-brand">Agent4All Blog</span>
+  <div class="agent-page article-page">
+    <header class="site-header agent-topbar">
+      <a class="site-brand" href="/">
+        <span class="agent-mark site-mark" aria-hidden="true"><img src="/favicon.svg" alt="" /></span>
+        <span>Agent4All Blog</span>
+      </a>
       <nav class="site-nav" aria-label="Primary">
         <a href="/">Home</a>
         <a href="/blog">Blogs</a>
       </nav>
     </header>
-    <main class="article-main">
+    <main class="agent-frame article-frame">
       <div class="article-layout">
-        <aside class="article-aside" aria-label="Article navigation">
-          <div class="reading-rail" aria-hidden="true"><span class="rail-mark"></span></div>
+        <aside class="article-toc-panel" aria-label="Article navigation">
           <nav>
             <p class="toc-label">Contents</p>
             ${headings.length ? `<ol class="toc-list">${headings.map((h) => `<li><a href="#${escapeAttribute(h.id)}">${escapeHtml(h.text)}</a></li>`).join('')}</ol>` : '<p class="toc-list">Article</p>'}
           </nav>
         </aside>
-        <article id="article-content">
+        <article id="article-content" class="article-shell">
           <header class="article-header">
             <p class="article-meta">
               <time datetime="${escapeAttribute(post.published_at || '')}">${formatDate(post.published_at)}</time>
@@ -55,7 +57,7 @@ function renderPost(post: PostRecord, adjacent: AdjacentPosts, origin: string): 
             <h1 class="article-title">${escapeHtml(post.title)}</h1>
             ${post.excerpt ? `<p class="article-excerpt">${escapeHtml(post.excerpt)}</p>` : ''}
             <div class="article-author">
-              <span class="author-mark">A4</span>
+              <span class="agent-mark author-mark">A4</span>
               <span>${escapeHtml(post.author_name || 'Agent4All Engineering')}</span>
             </div>
           </header>
